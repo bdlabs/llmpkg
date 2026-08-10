@@ -10,6 +10,7 @@
  *   fileExists: (path: string) => Promise<boolean>,
  *   deleteFile: (path: string) => Promise<void>,
  *   ensureDir: (path: string) => Promise<void>,
+ *   removeEmptyDir: (path: string) => Promise<boolean>,
  * }} FileSystemWriter
  */
 
@@ -25,5 +26,6 @@ export function createNoOpFileSystem() {
         async fileExists(_path) { return false; },
         async deleteFile(_path) { },
         async ensureDir(_path) { },
+        async removeEmptyDir(_path) { return false; },
     };
 }

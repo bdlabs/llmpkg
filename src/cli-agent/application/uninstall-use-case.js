@@ -30,11 +30,30 @@ export async function execute(command, { packageStore, fileSystem }) {
     }
 
     const removed = [];
+    const dirsToCheck = new Set();
+
     for (const filePath of (record.files ?? [])) {
         const exists = await fileSystem.fileExists(filePath);
         if (exists) {
             await fileSystem.deleteFile(filePath);
             removed.push(filePath);
+        }
+
+        let dirPath = filePath.replace(/[/\\][^/\\]+$/, '');
+        dirsToCheck.add(dirPath);
+    }
+
+    // Try to remove empty dirs iteratively up the tree
+    const dirsArray = Array.from(dirsToCheck).sort((a, b) => b.length - a.length);
+    for (let dir of dirsArray) {
+        let currentDir = dir;
+        while (currentDir) {
+            const wasRemoved = await fileSystem.removeEmptyDir(currentDir);
+            if (!wasRemoved) break;
+
+            const parent = currentDir.replace(/[/\\][^/\\]+$/, '');
+            if (parent === currentDir) break;
+            currentDir = parent;
         }
     }
 

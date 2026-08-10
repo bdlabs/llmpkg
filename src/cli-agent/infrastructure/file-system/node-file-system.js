@@ -4,7 +4,7 @@
  * Infrastructure layer — wraps Node.js fs/promises.
  */
 
-import { readFile, writeFile, unlink, access, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, unlink, access, mkdir, rmdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { constants } from 'node:fs';
 import { LlmpkgError, ERROR_CODES } from '../../domain/errors.js';
@@ -53,6 +53,17 @@ export function createNodeFileSystem() {
 
         async ensureDir(path) {
             await mkdir(path, { recursive: true });
+        },
+
+        async removeEmptyDir(path) {
+            try {
+                await rmdir(path);
+                return true;
+            } catch (err) {
+                // Ignore if directory is not empty (ENOTEMPTY), doesn't exist (ENOENT)
+                // or if it's not a directory (ENOTDIR on some platforms when expected dir is actually a file, though shouldn't happen here)
+                return false;
+            }
         },
     };
 }
