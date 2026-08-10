@@ -93,6 +93,16 @@ export function formatInstalledList(records) {
 }
 
 /**
+ * Format repository add result.
+ * @param {{ name: string, url: string, global: boolean }} result
+ * @returns {string}
+ */
+export function formatRepoAddResult(result) {
+    const scope = result.global ? 'global config (~/.config/llmpkg/config.json)' : 'project config (llmpkg.json)';
+    return `Added repository '${result.name}' (${result.url}) to ${scope}.`;
+}
+
+/**
  * Format an error for human display.
  * Hides stack traces and raw technical details — TechnicalLeakage prevention.
  * @param {Error} error

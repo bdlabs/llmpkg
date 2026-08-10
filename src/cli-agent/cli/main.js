@@ -19,16 +19,19 @@ import { parseCliArgs } from './adapters/input/parse-args.js';
 import {
     formatSearchResult, formatPackageInfo, formatInstallResult,
     formatUninstallResult, formatInstalledList, formatError,
+    formatRepoAddResult,
 } from './adapters/output/text-formatter.js';
 import {
     formatSearchResultJson, formatPackageInfoJson, formatInstallResultJson,
     formatUninstallResultJson, formatInstalledListJson, formatErrorJson,
+    formatRepoAddResultJson,
 } from './adapters/output/json-formatter.js';
 
 import * as SearchUseCase from '../application/search-use-case.js';
 import * as InfoUseCase from '../application/info-use-case.js';
 import * as InstallUseCase from '../application/install-use-case.js';
 import * as UninstallUseCase from '../application/uninstall-use-case.js';
+import * as RepoAddUseCase from '../application/repo-add-use-case.js';
 
 import { createRepositoryIndex, createManifestFetcher, createArtifactDownloader } from '../infrastructure/transport/transport-factory.js';
 import { createJsonPackageStore } from '../infrastructure/store/json-package-store.js';
@@ -92,8 +95,8 @@ export async function runCli(argv = process.argv.slice(2)) {
         const deps = buildDeps({ config, dryRun: parsed.dryRun });
 
         const fmt = useJson
-            ? { search: formatSearchResultJson, info: formatPackageInfoJson, install: formatInstallResultJson, uninstall: formatUninstallResultJson, list: formatInstalledListJson }
-            : { search: formatSearchResult, info: formatPackageInfo, install: formatInstallResult, uninstall: formatUninstallResult, list: formatInstalledList };
+            ? { search: formatSearchResultJson, info: formatPackageInfoJson, install: formatInstallResultJson, uninstall: formatUninstallResultJson, list: formatInstalledListJson, repoAdd: formatRepoAddResultJson }
+            : { search: formatSearchResult, info: formatPackageInfo, install: formatInstallResult, uninstall: formatUninstallResult, list: formatInstalledList, repoAdd: formatRepoAddResult };
 
         switch (parsed.command) {
             case 'search': {
@@ -133,7 +136,6 @@ export async function runCli(argv = process.argv.slice(2)) {
             }
 
             case 'repo': {
-                // Repo management — future: RepoAddUseCase
                 if (parsed.subcommand === 'list') {
                     const repos = config.repositories ?? [];
                     if (useJson) {
@@ -144,7 +146,12 @@ export async function runCli(argv = process.argv.slice(2)) {
                             : repos.map((r) => `${r.name}  ${r.url}`).join('\n') + '\n');
                     }
                 } else if (parsed.subcommand === 'add') {
-                    process.stdout.write(`Repository management (add/remove) requires editing llmpkg.json or ~/.config/llmpkg/config.json.\nName: ${parsed.name}, URL: ${parsed.url}\n`);
+                    const result = await RepoAddUseCase.execute({
+                        name: parsed.name,
+                        url: parsed.url,
+                        global: parsed.global,
+                    }, deps);
+                    process.stdout.write(fmt.repoAdd(result) + '\n');
                 }
                 break;
             }

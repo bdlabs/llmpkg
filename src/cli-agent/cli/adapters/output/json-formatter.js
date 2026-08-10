@@ -47,6 +47,14 @@ export function formatInstalledListJson(records) {
 }
 
 /**
+ * @param {{ name: string, url: string, global: boolean }} result
+ * @returns {string}
+ */
+export function formatRepoAddResultJson(result) {
+    return JSON.stringify(result, null, 2);
+}
+
+/**
  * Format error as JSON. Intentionally excludes stack trace.
  * @param {Error} error
  * @returns {string}

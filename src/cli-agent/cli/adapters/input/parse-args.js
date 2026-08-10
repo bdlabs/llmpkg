@@ -93,12 +93,13 @@ export function parseCliArgs(argv) {
 
         case 'repo': {
             const [subcommand, ...repoArgs] = rest;
+            const global = argv.includes('--global');
             if (subcommand === 'add') {
                 const [name, url] = repoArgs;
                 if (!name || !url) {
                     throw new LlmpkgError(ERROR_CODES.INVALID_PACKAGE, 'Usage: llmpkg repo add <name> <url>');
                 }
-                return { command: 'repo', subcommand: 'add', name, url, json };
+                return { command: 'repo', subcommand: 'add', name, url, global, json };
             }
             if (subcommand === 'list' || !subcommand) {
                 return { command: 'repo', subcommand: 'list', json };
