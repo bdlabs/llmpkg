@@ -12,7 +12,8 @@ import { resolveBestVersion } from '../domain/version.js';
 import { buildDependencyGraph, detectCycles, resolveDependencyOrder } from '../domain/dependency-graph.js';
 
 /**
- * @typedef {{ packageName: string, versionConstraint?: string, repository?: string }} ResolveCommand
+/**
+ * @typedef {{ packageName: string, versionConstraint?: string, repository?: string, repoUrl?: string }} ResolveCommand
  * @typedef {{ package: import('../domain/package.js').Package, dependencies: import('../domain/package.js').Package[], repository: string, resolvedVersion: string }} ResolvedPlan
  */
 
@@ -23,7 +24,7 @@ import { buildDependencyGraph, detectCycles, resolveDependencyOrder } from '../d
  * @returns {Promise<ResolvedPlan>}
  */
 export async function execute(command, { repositoryIndex, manifestFetcher }) {
-    const { packageName, versionConstraint, repository } = command;
+    const { packageName, versionConstraint, repository, repoUrl = '' } = command;
 
     const versions = await repositoryIndex.getPackageVersions(packageName);
     if (!versions || versions.length === 0) {
@@ -42,7 +43,6 @@ export async function execute(command, { repositoryIndex, manifestFetcher }) {
         );
     }
 
-    const repoUrl = repository ?? '';
     const raw = await manifestFetcher.fetchManifest(packageName, resolved, repoUrl);
     if (!raw) {
         throw new LlmpkgError(ERROR_CODES.INVALID_MANIFEST, `Manifest not found for "${packageName}@${resolved}".`);

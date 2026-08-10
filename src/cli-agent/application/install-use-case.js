@@ -51,9 +51,14 @@ export async function execute(command, { repositoryIndex, manifestFetcher, artif
     if (!packageName) throw new LlmpkgError(ERROR_CODES.INVALID_PACKAGE, 'packageName is required.');
     if (!targetDir) throw new LlmpkgError(ERROR_CODES.INVALID_PACKAGE, 'targetDir is required.');
 
+    const repoUrl = config.repositories.find((r) => r.name === repository)?.url
+        ?? config.repositories[0]?.url
+        ?? repository
+        ?? '';
+
     // Step 1: Resolve
     const resolved = await resolveExecute(
-        { packageName, versionConstraint: command.version, repository },
+        { packageName, versionConstraint: command.version, repository, repoUrl },
         { repositoryIndex, manifestFetcher },
     );
 
@@ -77,11 +82,6 @@ export async function execute(command, { repositoryIndex, manifestFetcher, artif
             );
         }
     }
-
-    const repoUrl = config.repositories.find((r) => r.name === repository)?.url
-        ?? config.repositories[0]?.url
-        ?? repository
-        ?? '';
 
     // Step 4: Download + verify + write each artifact
     for (const artifact of pkg.artifacts) {

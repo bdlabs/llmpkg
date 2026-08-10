@@ -106,7 +106,7 @@ export function createLocalFsArtifactDownloader() {
     return {
         async downloadArtifact(artifact, repoUrl) {
             const basePath = getBasePath(repoUrl);
-            const filePath = join(basePath, artifact.path);
+            const filePath = join(basePath, 'packages', artifact.path);
             try {
                 return await readFile(filePath);
             } catch (err) {

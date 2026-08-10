@@ -138,7 +138,8 @@ export function createHttpArtifactDownloader() {
     return {
         async downloadArtifact(artifact, repoUrl) {
             const base = repoUrl.replace(/\/$/, '');
-            const url = `${base}/packages/${encodeURIComponent(artifact.path)}`;
+            const encodedPath = artifact.path.split('/').map(encodeURIComponent).join('/');
+            const url = `${base}/packages/${encodedPath}`;
             let res;
             try {
                 res = await fetch(url);
