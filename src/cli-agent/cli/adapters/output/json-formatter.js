@@ -55,6 +55,14 @@ export function formatRepoAddResultJson(result) {
 }
 
 /**
+ * @param {Array<{ name: string, url: string }>} repos
+ * @returns {string}
+ */
+export function formatRepositoryListJson(repos) {
+    return JSON.stringify(repos, null, 2);
+}
+
+/**
  * Format error as JSON. Intentionally excludes stack trace.
  * @param {Error} error
  * @returns {string}

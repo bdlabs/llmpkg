@@ -20,16 +20,4 @@
  * }} PackageStore
  */
 
-/**
- * Null-object implementation for tests.
- * @returns {PackageStore}
- */
-export function createNullPackageStore() {
-    const store = new Map();
-    return {
-        async saveInstallRecord(record) { store.set(record.name, record); },
-        async getInstallRecord(name) { return store.get(name) ?? null; },
-        async listInstalled() { return [...store.values()]; },
-        async removeInstallRecord(name) { store.delete(name); },
-    };
-}
+

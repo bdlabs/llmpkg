@@ -3,9 +3,8 @@ import assert from 'node:assert/strict';
 import { execute } from '../../../src/cli-agent/application/install-use-case.js';
 import { createNullRepositoryIndex } from '../../../src/cli-agent/domain/contracts/repository-index.js';
 import { createNullManifestFetcher } from '../../../src/cli-agent/domain/contracts/manifest-fetcher.js';
-import { createNullArtifactDownloader } from '../../../src/cli-agent/domain/contracts/artifact-downloader.js';
-import { createNullPackageStore } from '../../../src/cli-agent/domain/contracts/package-store.js';
-import { createNoOpFileSystem } from '../../../src/cli-agent/domain/contracts/file-system.js';
+import { createNullArtifactDownloader, createNullPackageStore } from '../../../src/cli-agent/infrastructure/tests/test-helpers.js';
+import { createNoOpFileSystem } from '../../../src/cli-agent/infrastructure/file-system/noop-file-system.js';
 import { createNullConfigReader } from '../../../src/cli-agent/domain/contracts/config-reader.js';
 import { LlmpkgError, ERROR_CODES } from '../../../src/cli-agent/domain/errors.js';
 

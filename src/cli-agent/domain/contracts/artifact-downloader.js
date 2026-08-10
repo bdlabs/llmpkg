@@ -8,14 +8,4 @@
  * }} ArtifactDownloader
  */
 
-/**
- * Null-object implementation — returns an empty Buffer.
- * @returns {ArtifactDownloader}
- */
-export function createNullArtifactDownloader() {
-    return {
-        async downloadArtifact(_artifact, _repoUrl) {
-            return Buffer.alloc(0);
-        },
-    };
-}
+

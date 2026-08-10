@@ -19,12 +19,12 @@ import { parseCliArgs } from './adapters/input/parse-args.js';
 import {
     formatSearchResult, formatPackageInfo, formatInstallResult,
     formatUninstallResult, formatInstalledList, formatError,
-    formatRepoAddResult,
+    formatRepoAddResult, formatRepositoryList,
 } from './adapters/output/text-formatter.js';
 import {
     formatSearchResultJson, formatPackageInfoJson, formatInstallResultJson,
     formatUninstallResultJson, formatInstalledListJson, formatErrorJson,
-    formatRepoAddResultJson,
+    formatRepoAddResultJson, formatRepositoryListJson
 } from './adapters/output/json-formatter.js';
 
 import * as SearchUseCase from '../application/search-use-case.js';
@@ -32,11 +32,14 @@ import * as InfoUseCase from '../application/info-use-case.js';
 import * as InstallUseCase from '../application/install-use-case.js';
 import * as UninstallUseCase from '../application/uninstall-use-case.js';
 import * as RepoAddUseCase from '../application/repo-add-use-case.js';
+import * as ListInstalledUseCase from '../application/list-installed-use-case.js';
+import * as ListRepositoriesUseCase from '../application/list-repositories-use-case.js';
+import { resolveConfig } from '../application/config-resolver.js';
 
 import { createRepositoryIndex, createManifestFetcher, createArtifactDownloader } from '../infrastructure/transport/transport-factory.js';
 import { createJsonPackageStore } from '../infrastructure/store/json-package-store.js';
 import { createNodeFileSystem } from '../infrastructure/file-system/node-file-system.js';
-import { createNoOpFileSystem } from '../domain/contracts/file-system.js';
+import { createNoOpFileSystem } from '../infrastructure/file-system/noop-file-system.js';
 import { createYamlConfigReader } from '../infrastructure/config/yaml-config-reader.js';
 
 import { join } from 'node:path';
@@ -89,15 +92,13 @@ export async function runCli(argv = process.argv.slice(2)) {
         }
 
         const configReader = createYamlConfigReader();
-        const globalConfig = await configReader.readGlobalConfig();
-        const projectConfig = await configReader.readProjectConfig();
-        const config = { ...globalConfig, ...(projectConfig ?? {}) };
+        const config = await resolveConfig(configReader);
 
         const deps = buildDeps({ config, dryRun: parsed.dryRun });
 
         const fmt = useJson
-            ? { search: formatSearchResultJson, info: formatPackageInfoJson, install: formatInstallResultJson, uninstall: formatUninstallResultJson, list: formatInstalledListJson, repoAdd: formatRepoAddResultJson }
-            : { search: formatSearchResult, info: formatPackageInfo, install: formatInstallResult, uninstall: formatUninstallResult, list: formatInstalledList, repoAdd: formatRepoAddResult };
+            ? { search: formatSearchResultJson, info: formatPackageInfoJson, install: formatInstallResultJson, uninstall: formatUninstallResultJson, list: formatInstalledListJson, repoAdd: formatRepoAddResultJson, repoList: formatRepositoryListJson }
+            : { search: formatSearchResult, info: formatPackageInfo, install: formatInstallResult, uninstall: formatUninstallResult, list: formatInstalledList, repoAdd: formatRepoAddResult, repoList: formatRepositoryList };
 
         switch (parsed.command) {
             case 'search': {
@@ -131,21 +132,15 @@ export async function runCli(argv = process.argv.slice(2)) {
             }
 
             case 'list': {
-                const records = await deps.packageStore.listInstalled();
-                process.stdout.write(fmt.list(records) + '\n');
+                const result = await ListInstalledUseCase.execute({}, deps);
+                process.stdout.write(fmt.list(result) + '\n');
                 break;
             }
 
             case 'repo': {
                 if (parsed.subcommand === 'list') {
-                    const repos = config.repositories ?? [];
-                    if (useJson) {
-                        process.stdout.write(JSON.stringify(repos, null, 2) + '\n');
-                    } else {
-                        process.stdout.write(repos.length === 0
-                            ? 'No repositories configured.\n'
-                            : repos.map((r) => `${r.name}  ${r.url}`).join('\n') + '\n');
-                    }
+                    const result = await ListRepositoriesUseCase.execute({}, deps);
+                    process.stdout.write(fmt.repoList(result) + '\n');
                 } else if (parsed.subcommand === 'add') {
                     const result = await RepoAddUseCase.execute({
                         name: parsed.name,

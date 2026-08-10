@@ -97,9 +97,24 @@ export function formatInstalledList(records) {
  * @param {{ name: string, url: string, global: boolean }} result
  * @returns {string}
  */
+/**
+ * Format repository add result.
+ * @param {{ name: string, url: string, global: boolean }} result
+ * @returns {string}
+ */
 export function formatRepoAddResult(result) {
     const scope = result.global ? 'global config (~/.config/llmpkg/config.json)' : 'project config (.llmpkg/llmpkg.json)';
     return `Added repository '${result.name}' (${result.url}) to ${scope}.`;
+}
+
+/**
+ * Format a list of configured repositories.
+ * @param {Array<{ name: string, url: string }>} repos
+ * @returns {string}
+ */
+export function formatRepositoryList(repos) {
+    if (repos.length === 0) return 'No repositories configured.';
+    return repos.map((r) => `${r.name}  ${r.url}`).join('\n');
 }
 
 /**
@@ -108,7 +123,59 @@ export function formatRepoAddResult(result) {
  * @param {Error} error
  * @returns {string}
  */
+/**
+ * Format an error for human display.
+ * Hides stack traces and raw technical details — TechnicalLeakage prevention.
+ * @param {Error} error
+ * @returns {string}
+ */
 export function formatError(error) {
     const code = error.code ? ` [${error.code}]` : '';
-    return `Error${code}: ${error.message}`;
+    let msg = error.message;
+
+    switch (error.code) {
+        case 'PACKAGE_NOT_FOUND':
+            msg = 'The requested package could not be found.';
+            break;
+        case 'VERSION_NOT_FOUND':
+            msg = 'The requested version could not be found for the package.';
+            break;
+        case 'INVALID_MANIFEST':
+            msg = 'The package manifest is invalid or could not be parsed.';
+            break;
+        case 'INTEGRITY_ERROR':
+            msg = 'Package integrity check failed. The artifact may be corrupted.';
+            break;
+        case 'DEPENDENCY_CONFLICT':
+            msg = 'A dependency conflict was detected. Cannot resolve constraints.';
+            break;
+        case 'DEPENDENCY_CYCLE':
+            msg = 'A dependency cycle was detected and cannot be resolved.';
+            break;
+        case 'FILE_CONFLICT':
+            msg = 'A file system conflict occurred. Cannot read or write files.';
+            break;
+        case 'REPOSITORY_UNAVAILABLE':
+            msg = 'The repository is currently unavailable or unreachable.';
+            break;
+        case 'AUTHENTICATION_REQUIRED':
+            msg = 'Authentication is required to access the repository.';
+            break;
+        case 'UNSUPPORTED_PROTOCOL':
+            msg = 'The requested protocol is not supported.';
+            break;
+        case 'INVALID_PACKAGE':
+            msg = 'The package name or metadata is invalid.';
+            break;
+        case 'INVALID_ARTIFACT':
+            msg = 'The artifact configuration is invalid.';
+            break;
+        case 'PATH_TRAVERSAL':
+            msg = 'A path traversal attempt was detected and blocked.';
+            break;
+        default:
+            msg = 'An unexpected error occurred.';
+    }
+
+    return `Error${code}: ${msg}`;
 }
