@@ -41,10 +41,11 @@ import { assertIntegrity } from '../domain/integrity.js';
  *   packageStore: import('../domain/contracts/package-store.js').PackageStore,
  *   fileSystem: import('../domain/contracts/file-system.js').FileSystemWriter,
  *   configReader: import('../domain/contracts/config-reader.js').ConfigReader,
+ *   config: import('../domain/contracts/config-reader.js').LlmpkgConfig,
  * }} deps
  * @returns {Promise<InstallResult>}
  */
-export async function execute(command, { repositoryIndex, manifestFetcher, artifactDownloader, packageStore, fileSystem, configReader }) {
+export async function execute(command, { repositoryIndex, manifestFetcher, artifactDownloader, packageStore, fileSystem, configReader, config }) {
     const { packageName, targetDir, dryRun = false, repository } = command;
 
     if (!packageName) throw new LlmpkgError(ERROR_CODES.INVALID_PACKAGE, 'packageName is required.');
@@ -77,8 +78,10 @@ export async function execute(command, { repositoryIndex, manifestFetcher, artif
         }
     }
 
-    const config = await configReader.readGlobalConfig();
-    const repoUrl = config.repositories.find((r) => r.name === repository)?.url ?? repository ?? '';
+    const repoUrl = config.repositories.find((r) => r.name === repository)?.url
+        ?? config.repositories[0]?.url
+        ?? repository
+        ?? '';
 
     // Step 4: Download + verify + write each artifact
     for (const artifact of pkg.artifacts) {

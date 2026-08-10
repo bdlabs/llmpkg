@@ -17,10 +17,10 @@ import { resolveBestVersion } from '../domain/version.js';
 /**
  * Execute package info lookup.
  * @param {InfoCommand} command
- * @param {{ repositoryIndex: import('../domain/contracts/repository-index.js').RepositoryIndex, manifestFetcher: import('../domain/contracts/manifest-fetcher.js').ManifestFetcher, configReader: import('../domain/contracts/config-reader.js').ConfigReader }} deps
+ * @param {{ repositoryIndex: import('../domain/contracts/repository-index.js').RepositoryIndex, manifestFetcher: import('../domain/contracts/manifest-fetcher.js').ManifestFetcher, configReader: import('../domain/contracts/config-reader.js').ConfigReader, config: import('../domain/contracts/config-reader.js').LlmpkgConfig }} deps
  * @returns {Promise<import('../domain/package.js').Package>}
  */
-export async function execute(command, { repositoryIndex, manifestFetcher, configReader }) {
+export async function execute(command, { repositoryIndex, manifestFetcher, configReader, config }) {
     const { packageName } = command;
     if (!packageName) {
         throw new LlmpkgError(ERROR_CODES.INVALID_PACKAGE, 'packageName is required.');
@@ -46,8 +46,10 @@ export async function execute(command, { repositoryIndex, manifestFetcher, confi
     }
 
     // Fetch manifest (by contract — doesn't know if it's HTTP or local)
-    const config = await configReader.readGlobalConfig();
-    const repoConfig = config.repositories[0] ?? { url: '' };
+    const repoConfig = config.repositories.find((r) => r.name === command.repository)
+        ?? config.repositories[0]
+        ?? { url: '' };
+
     const raw = await manifestFetcher.fetchManifest(packageName, resolved, repoConfig.url);
 
     if (!raw) {

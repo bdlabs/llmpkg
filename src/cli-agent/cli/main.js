@@ -69,6 +69,7 @@ function buildDeps({ config, dryRun = false }) {
         packageStore: createJsonPackageStore(join(process.cwd(), '.llmpkg', 'installed.json')),
         fileSystem: dryRun ? createNoOpFileSystem() : createNodeFileSystem(),
         configReader: createYamlConfigReader(),
+        config,
     };
 }
 
