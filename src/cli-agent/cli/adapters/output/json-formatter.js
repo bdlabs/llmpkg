@@ -6,6 +6,8 @@
  * Use cases are completely unaware of --json mode.
  */
 
+import { getSafeErrorMessage } from './error-mapper.js';
+
 /**
  * @param {{ packages: Array, totalCount: number }} result
  * @returns {string}
@@ -70,6 +72,6 @@ export function formatRepositoryListJson(repos) {
 export function formatErrorJson(error) {
     return JSON.stringify({
         error: error.code ?? 'UNKNOWN_ERROR',
-        message: error.message,
+        message: getSafeErrorMessage(error),
     }, null, 2);
 }

@@ -6,6 +6,8 @@
  * TechnicalLeakage prevention: formatError hides stack traces and raw infra errors.
  */
 
+import { getSafeErrorMessage } from './error-mapper.js';
+
 const COL_NAME = 24;
 const COL_VERSION = 12;
 const COL_REPO = 16;
@@ -131,51 +133,7 @@ export function formatRepositoryList(repos) {
  */
 export function formatError(error) {
     const code = error.code ? ` [${error.code}]` : '';
-    let msg = error.message;
-
-    switch (error.code) {
-        case 'PACKAGE_NOT_FOUND':
-            msg = 'The requested package could not be found.';
-            break;
-        case 'VERSION_NOT_FOUND':
-            msg = 'The requested version could not be found for the package.';
-            break;
-        case 'INVALID_MANIFEST':
-            msg = 'The package manifest is invalid or could not be parsed.';
-            break;
-        case 'INTEGRITY_ERROR':
-            msg = 'Package integrity check failed. The artifact may be corrupted.';
-            break;
-        case 'DEPENDENCY_CONFLICT':
-            msg = 'A dependency conflict was detected. Cannot resolve constraints.';
-            break;
-        case 'DEPENDENCY_CYCLE':
-            msg = 'A dependency cycle was detected and cannot be resolved.';
-            break;
-        case 'FILE_CONFLICT':
-            msg = 'A file system conflict occurred. Cannot read or write files.';
-            break;
-        case 'REPOSITORY_UNAVAILABLE':
-            msg = 'The repository is currently unavailable or unreachable.';
-            break;
-        case 'AUTHENTICATION_REQUIRED':
-            msg = 'Authentication is required to access the repository.';
-            break;
-        case 'UNSUPPORTED_PROTOCOL':
-            msg = 'The requested protocol is not supported.';
-            break;
-        case 'INVALID_PACKAGE':
-            msg = 'The package name or metadata is invalid.';
-            break;
-        case 'INVALID_ARTIFACT':
-            msg = 'The artifact configuration is invalid.';
-            break;
-        case 'PATH_TRAVERSAL':
-            msg = 'A path traversal attempt was detected and blocked.';
-            break;
-        default:
-            msg = 'An unexpected error occurred.';
-    }
+    const msg = getSafeErrorMessage(error);
 
     return `Error${code}: ${msg}`;
 }

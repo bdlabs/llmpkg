@@ -17,13 +17,3 @@
  * }} PackageEntry
  */
 
-/**
- * Null-object implementation for testing use cases without real infrastructure.
- * @returns {RepositoryIndex}
- */
-export function createNullRepositoryIndex() {
-    return {
-        async searchPackages(_query) { return []; },
-        async getPackageVersions(_name) { return []; },
-    };
-}

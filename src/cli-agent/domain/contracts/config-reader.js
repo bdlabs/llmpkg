@@ -21,15 +21,3 @@ export function createDefaultConfig() {
     return { repositories: [], defaultTarget: null };
 }
 
-/**
- * Null-object implementation for tests.
- * @returns {ConfigReader}
- */
-export function createNullConfigReader(overrides = {}) {
-    return {
-        async readGlobalConfig() { return { ...createDefaultConfig(), ...overrides }; },
-        async readProjectConfig() { return null; },
-        async writeGlobalConfig(config) { },
-        async writeProjectConfig(config) { },
-    };
-}

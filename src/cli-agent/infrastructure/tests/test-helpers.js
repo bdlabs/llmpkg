@@ -3,6 +3,8 @@
  * @description Helper functions for testing.
  */
 
+import { createDefaultConfig } from '../../domain/contracts/config-reader.js';
+
 export function createNullPackageStore() {
     const store = new Map();
     return {
@@ -18,5 +20,29 @@ export function createNullArtifactDownloader() {
         async downloadArtifact(_artifact, _repoUrl) {
             return Buffer.alloc(0);
         },
+    };
+}
+
+export function createNullRepositoryIndex() {
+    return {
+        async searchPackages(_query) { return []; },
+        async getPackageVersions(_name) { return []; },
+    };
+}
+
+export function createNullManifestFetcher() {
+    return {
+        async fetchManifest(_packageName, _version, _repoUrl) {
+            return null;
+        },
+    };
+}
+
+export function createNullConfigReader(overrides = {}) {
+    return {
+        async readGlobalConfig() { return { ...createDefaultConfig(), ...overrides }; },
+        async readProjectConfig() { return null; },
+        async writeGlobalConfig(config) { },
+        async writeProjectConfig(config) { },
     };
 }

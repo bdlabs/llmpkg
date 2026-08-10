@@ -8,14 +8,3 @@
  * }} ManifestFetcher
  */
 
-/**
- * Null-object implementation — returns a minimal valid manifest structure.
- * @returns {ManifestFetcher}
- */
-export function createNullManifestFetcher() {
-    return {
-        async fetchManifest(_packageName, _version, _repoUrl) {
-            return null;
-        },
-    };
-}

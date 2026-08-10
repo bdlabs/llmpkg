@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { execute } from '../../../src/cli-agent/application/search-use-case.js';
-import { createNullRepositoryIndex } from '../../../src/cli-agent/domain/contracts/repository-index.js';
+import { createNullRepositoryIndex } from '../../../src/cli-agent/infrastructure/tests/test-helpers.js';
 import { LlmpkgError, ERROR_CODES } from '../../../src/cli-agent/domain/errors.js';
 
 describe('SearchUseCase', () => {
