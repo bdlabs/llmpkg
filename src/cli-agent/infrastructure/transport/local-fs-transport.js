@@ -23,14 +23,22 @@ async function readJsonFile(filePath) {
     }
 }
 
+import { fileURLToPath } from 'node:url';
+
 /**
  * Strip file:// prefix if present to get local fs path.
+ * Uses fileURLToPath for robust parsing on all operating systems.
  * @param {string} url
  * @returns {string}
  */
 function getBasePath(url) {
     if (url.startsWith('file://')) {
-        return url.slice(7);
+        try {
+            return fileURLToPath(url);
+        } catch (err) {
+            // Fallback for malformed file:// URLs like file://D:\... instead of file:///D:\...
+            return url.replace(/^file:\/\//, '');
+        }
     }
     return url;
 }
