@@ -7,6 +7,7 @@
  */
 
 import { getSafeErrorMessage } from './error-mapper.js';
+import { theme } from './theme.js';
 
 const COL_NAME = 24;
 const COL_VERSION = 12;
@@ -23,12 +24,12 @@ function pad(str, width) {
  */
 export function formatSearchResult(result) {
     if (!result.packages || result.packages.length === 0) {
-        return 'No packages found.';
+        return theme.warning('No packages found.');
     }
-    const header = `${pad('NAME', COL_NAME)}${pad('VERSION', COL_VERSION)}${'REPOSITORY'}`;
-    const separator = '-'.repeat(COL_NAME + COL_VERSION + COL_REPO);
+    const header = theme.label(`${pad('NAME', COL_NAME)}${pad('VERSION', COL_VERSION)}${'REPOSITORY'}`);
+    const separator = theme.muted('-'.repeat(COL_NAME + COL_VERSION + COL_REPO));
     const rows = result.packages.map(
-        (p) => `${pad(p.name, COL_NAME)}${pad(p.version, COL_VERSION)}${p.repository ?? ''}`,
+        (p) => `${theme.value(pad(p.name, COL_NAME))}${theme.value(pad(p.version, COL_VERSION))}${theme.muted(p.repository ?? '')}`,
     );
     return [header, separator, ...rows].join('\n');
 }
@@ -40,20 +41,20 @@ export function formatSearchResult(result) {
  */
 export function formatPackageInfo(pkg) {
     const lines = [
-        `${pkg.name}`,
-        `  version:    ${pkg.version}`,
-        `  repository: ${pkg.repository ?? 'unknown'}`,
-        `  description: ${pkg.description || '(none)'}`,
+        `${theme.primary(pkg.name)}`,
+        `  ${theme.label('version:   ')} ${theme.value(pkg.version)}`,
+        `  ${theme.label('repository:')} ${theme.muted(pkg.repository ?? 'unknown')}`,
+        `  ${theme.label('description:')} ${theme.value(pkg.description || '(none)')}`,
         '',
-        '  Artifacts:',
-        ...pkg.artifacts.map((a) => `    ${a.type.padEnd(20)} ${a.id}  →  ${a.path}`),
+        `  ${theme.label('Artifacts:')}`,
+        ...pkg.artifacts.map((a) => `    ${theme.muted(a.type.padEnd(20))} ${theme.value(a.id)}  →  ${theme.muted(a.path)}`),
     ];
 
     const deps = Object.entries(pkg.dependencies ?? {});
     if (deps.length > 0) {
-        lines.push('', '  Dependencies:');
+        lines.push('', `  ${theme.label('Dependencies:')}`);
         for (const [name, constraint] of deps) {
-            lines.push(`    ${name}  ${constraint}`);
+            lines.push(`    ${theme.value(name)}  ${theme.muted(constraint)}`);
         }
     }
 
@@ -66,9 +67,9 @@ export function formatPackageInfo(pkg) {
  * @returns {string}
  */
 export function formatInstallResult(result) {
-    const prefix = result.dryRun ? '[dry-run] Would install:' : 'Installed:';
-    if (result.installed.length === 0) return `${prefix} (nothing to install)`;
-    return [prefix, ...result.installed.map((f) => `  ${f}`)].join('\n');
+    const prefix = result.dryRun ? theme.warning('[dry-run] Would install:') : `${theme.iconSuccess()} ${theme.success('Installed:')}`;
+    if (result.installed.length === 0) return `${prefix} ${theme.muted('(nothing to install)')}`;
+    return [prefix, ...result.installed.map((f) => `  ${theme.value(f)}`)].join('\n');
 }
 
 /**
@@ -77,8 +78,8 @@ export function formatInstallResult(result) {
  * @returns {string}
  */
 export function formatUninstallResult(result) {
-    if (result.removed.length === 0) return 'No files removed.';
-    return ['Removed:', ...result.removed.map((f) => `  ${f}`)].join('\n');
+    if (result.removed.length === 0) return theme.warning('No files removed.');
+    return [`${theme.iconSuccess()} ${theme.success('Removed:')}`, ...result.removed.map((f) => `  ${theme.value(f)}`)].join('\n');
 }
 
 /**
@@ -87,10 +88,10 @@ export function formatUninstallResult(result) {
  * @returns {string}
  */
 export function formatInstalledList(records) {
-    if (records.length === 0) return 'No packages installed.';
-    const header = `${pad('NAME', COL_NAME)}${pad('VERSION', COL_VERSION)}${'REPOSITORY'}`;
-    const separator = '-'.repeat(COL_NAME + COL_VERSION + COL_REPO);
-    const rows = records.map((r) => `${pad(r.name, COL_NAME)}${pad(r.version, COL_VERSION)}${r.repository ?? ''}`);
+    if (records.length === 0) return theme.warning('No packages installed.');
+    const header = theme.label(`${pad('NAME', COL_NAME)}${pad('VERSION', COL_VERSION)}${'REPOSITORY'}`);
+    const separator = theme.muted('-'.repeat(COL_NAME + COL_VERSION + COL_REPO));
+    const rows = records.map((r) => `${theme.value(pad(r.name, COL_NAME))}${theme.value(pad(r.version, COL_VERSION))}${theme.muted(r.repository ?? '')}`);
     return [header, separator, ...rows].join('\n');
 }
 
@@ -99,14 +100,9 @@ export function formatInstalledList(records) {
  * @param {{ name: string, url: string, global: boolean }} result
  * @returns {string}
  */
-/**
- * Format repository add result.
- * @param {{ name: string, url: string, global: boolean }} result
- * @returns {string}
- */
 export function formatRepoAddResult(result) {
     const scope = result.global ? 'global config (~/.config/llmpkg/config.json)' : 'project config (.llmpkg/llmpkg.json)';
-    return `Added repository '${result.name}' (${result.url}) to ${scope}.`;
+    return `${theme.iconSuccess()} ${theme.success('Added repository')} ${theme.value(`'${result.name}'`)} ${theme.muted(`(${result.url})`)} to ${theme.muted(scope)}.`;
 }
 
 /**
@@ -115,8 +111,8 @@ export function formatRepoAddResult(result) {
  * @returns {string}
  */
 export function formatRepositoryList(repos) {
-    if (repos.length === 0) return 'No repositories configured.';
-    return repos.map((r) => `${r.name}  ${r.url}`).join('\n');
+    if (repos.length === 0) return theme.warning('No repositories configured.');
+    return repos.map((r) => `${theme.value(r.name)}  ${theme.muted(r.url)}`).join('\n');
 }
 
 /**
@@ -125,15 +121,9 @@ export function formatRepositoryList(repos) {
  * @param {Error} error
  * @returns {string}
  */
-/**
- * Format an error for human display.
- * Hides stack traces and raw technical details — TechnicalLeakage prevention.
- * @param {Error} error
- * @returns {string}
- */
 export function formatError(error) {
-    const code = error.code ? ` [${error.code}]` : '';
+    const code = error.code ? theme.muted(` [${error.code}]`) : '';
     const msg = getSafeErrorMessage(error);
 
-    return `Error${code}: ${msg}`;
+    return `${theme.iconError()} ${theme.error('Error')}${code}: ${theme.value(msg)}`;
 }

@@ -33,14 +33,14 @@ const GLYPHS = {
     ],
 
     m: [
-        "        ",
-        "        ",
-        "## ## ##",
-        "########",
-        "## ## ##",
-        "## ## ##",
-        "## ## ##",
-        "## ## ##",
+        "          ",
+        "          ",
+        "## ## ### ",
+        "##########",
+        "##  ##  ##",
+        "##  ##  ##",
+        "##  ##  ##",
+        "##  ##  ##",
     ],
 
     p: [
@@ -124,6 +124,8 @@ function expandBitmap(bitmap) {
         for (const char of row) {
             if (char === "#") {
                 result += "██";
+            } else if (char === "@") {
+                result += "██";
             } else {
                 result += "  ";
             }
@@ -134,13 +136,15 @@ function expandBitmap(bitmap) {
 }
 
 
+import { rawColors } from './theme.js';
+
 /**
  * Generates ANSI-colored llmpkg logo.
  */
 export function generateLogo(text = "llmpkg") {
-    const C_MAIN = "\x1b[38;2;112;205;244m";
-    const C_SHADOW = "\x1b[38;2;35;84;116m";
-    const C_RST = "\x1b[0m";
+    const C_MAIN = rawColors.primary;
+    const C_SHADOW = rawColors.shadow;
+    const C_RST = rawColors.reset;
 
     const bitmap = expandBitmap(
         buildLogoBitmap(text)
