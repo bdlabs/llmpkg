@@ -40,7 +40,7 @@ async function writeJsonConfig(filePath, config) {
  */
 export function createYamlConfigReader({ cwd = process.cwd() } = {}) {
     const globalPath = join(homedir(), '.config', 'llmpkg', 'config.json');
-    const projectPath = join(cwd, 'llmpkg.json');
+    const projectPath = join(cwd, '.llmpkg', 'llmpkg.json');
 
     return {
         async readGlobalConfig() {

@@ -77,7 +77,7 @@ export function parseCliArgs(argv) {
                 const [packageName, version] = packageSpec.split('@');
                 return { command: 'install', packageName, version, targetDir, dryRun, repository, json };
             }
-            // Project install (reads llmpkg.json)
+            // Project install (reads .llmpkg/llmpkg.json)
             return { command: 'install', targetDir, dryRun, repository, json };
         }
 

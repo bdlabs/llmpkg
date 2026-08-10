@@ -98,7 +98,7 @@ export function formatInstalledList(records) {
  * @returns {string}
  */
 export function formatRepoAddResult(result) {
-    const scope = result.global ? 'global config (~/.config/llmpkg/config.json)' : 'project config (llmpkg.json)';
+    const scope = result.global ? 'global config (~/.config/llmpkg/config.json)' : 'project config (.llmpkg/llmpkg.json)';
     return `Added repository '${result.name}' (${result.url}) to ${scope}.`;
 }
 
