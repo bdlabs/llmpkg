@@ -24,12 +24,25 @@ async function readJsonFile(filePath) {
 }
 
 /**
+ * Strip file:// prefix if present to get local fs path.
+ * @param {string} url
+ * @returns {string}
+ */
+function getBasePath(url) {
+    if (url.startsWith('file://')) {
+        return url.slice(7);
+    }
+    return url;
+}
+
+/**
  * Local filesystem implementation of RepositoryIndex.
  * Expects: {basePath}/registry.json with { packages: [...] }
- * @param {string} basePath
+ * @param {{ name: string, url: string }} repoConfig
  * @returns {import('../../domain/contracts/repository-index.js').RepositoryIndex}
  */
-export function createLocalFsRepositoryIndex(basePath) {
+export function createLocalFsRepositoryIndex(repoConfig) {
+    const basePath = getBasePath(repoConfig.url);
     async function getRegistry() {
         const registry = await readJsonFile(join(basePath, 'registry.json'));
         if (!registry) {
@@ -48,7 +61,7 @@ export function createLocalFsRepositoryIndex(basePath) {
                 .map((p) => ({
                     name: p.name,
                     version: p.latestVersion ?? p.version ?? '0.0.0',
-                    repository: 'local',
+                    repository: repoConfig.name,
                     description: p.description ?? '',
                 }));
         },
@@ -65,13 +78,12 @@ export function createLocalFsRepositoryIndex(basePath) {
 
 /**
  * Local filesystem implementation of ManifestFetcher.
- * Expects: {basePath}/packages/{name}/{version}/manifest.json
- * @param {string} basePath
  * @returns {import('../../domain/contracts/manifest-fetcher.js').ManifestFetcher}
  */
-export function createLocalFsManifestFetcher(basePath) {
+export function createLocalFsManifestFetcher() {
     return {
-        async fetchManifest(packageName, version, _repoUrl) {
+        async fetchManifest(packageName, version, repoUrl) {
+            const basePath = getBasePath(repoUrl);
             const manifestPath = join(basePath, 'packages', packageName, version, 'manifest.json');
             return readJsonFile(manifestPath);
         },
@@ -80,12 +92,12 @@ export function createLocalFsManifestFetcher(basePath) {
 
 /**
  * Local filesystem implementation of ArtifactDownloader.
- * @param {string} basePath
  * @returns {import('../../domain/contracts/artifact-downloader.js').ArtifactDownloader}
  */
-export function createLocalFsArtifactDownloader(basePath) {
+export function createLocalFsArtifactDownloader() {
     return {
-        async downloadArtifact(artifact, _repoUrl) {
+        async downloadArtifact(artifact, repoUrl) {
+            const basePath = getBasePath(repoUrl);
             const filePath = join(basePath, artifact.path);
             try {
                 return await readFile(filePath);

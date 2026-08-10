@@ -30,7 +30,7 @@ import * as InfoUseCase from '../application/info-use-case.js';
 import * as InstallUseCase from '../application/install-use-case.js';
 import * as UninstallUseCase from '../application/uninstall-use-case.js';
 
-import { createHttpRepositoryIndex, createHttpManifestFetcher, createHttpArtifactDownloader } from '../infrastructure/transport/http-transport.js';
+import { createRepositoryIndex, createManifestFetcher, createArtifactDownloader } from '../infrastructure/transport/transport-factory.js';
 import { createJsonPackageStore } from '../infrastructure/store/json-package-store.js';
 import { createNodeFileSystem } from '../infrastructure/file-system/node-file-system.js';
 import { createNoOpFileSystem } from '../domain/contracts/file-system.js';
@@ -60,9 +60,9 @@ Usage:
 function buildDeps({ config, dryRun = false }) {
     const repoConfig = config.repositories[0] ?? { name: 'default', url: '' };
     return {
-        repositoryIndex: createHttpRepositoryIndex(repoConfig),
-        manifestFetcher: createHttpManifestFetcher(),
-        artifactDownloader: createHttpArtifactDownloader(),
+        repositoryIndex: createRepositoryIndex(repoConfig),
+        manifestFetcher: createManifestFetcher(),
+        artifactDownloader: createArtifactDownloader(),
         packageStore: createJsonPackageStore(join(process.cwd(), '.llmpkg', 'installed.json')),
         fileSystem: dryRun ? createNoOpFileSystem() : createNodeFileSystem(),
         configReader: createYamlConfigReader(),
