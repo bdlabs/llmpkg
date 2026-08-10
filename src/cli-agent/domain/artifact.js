@@ -52,12 +52,6 @@ export function createArtifact({ id, type, path, installPath }) {
     if (!id || typeof id !== 'string') {
         throw new LlmpkgError(ERROR_CODES.INVALID_ARTIFACT, `Artifact id is required.`);
     }
-    if (!ARTIFACT_TYPES.includes(type)) {
-        throw new LlmpkgError(
-            ERROR_CODES.INVALID_ARTIFACT,
-            `Unknown artifact type "${type}". Allowed: ${ARTIFACT_TYPES.join(', ')}.`,
-        );
-    }
     if (!isPathSafe(path)) {
         throw new LlmpkgError(
             ERROR_CODES.PATH_TRAVERSAL,

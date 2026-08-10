@@ -41,11 +41,9 @@ describe('artifact — createArtifact', () => {
         );
     });
 
-    test('throws on unknown type', () => {
-        assert.throws(
-            () => createArtifact({ id: 'x', type: 'unknown-type', path: 'a.md' }),
-            (e) => e instanceof LlmpkgError && e.code === ERROR_CODES.INVALID_ARTIFACT,
-        );
+    test('accepts unknown types as valid strings', () => {
+        const a = createArtifact({ id: 'x', type: 'unknown-type', path: 'a.md' });
+        assert.equal(a.type, 'unknown-type');
     });
 
     test('throws on path traversal', () => {
