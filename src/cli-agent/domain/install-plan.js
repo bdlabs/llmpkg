@@ -33,7 +33,7 @@ export function createInstallPlan({ artifacts, targetDir }) {
     const resolvedTarget = resolve(targetDir);
 
     const entries = artifacts.map((artifact) => {
-        const targetPath = join(resolvedTarget, artifact.path);
+        const targetPath = join(resolvedTarget, artifact.installPath || artifact.path);
         return {
             artifactId: artifact.id,
             sourcePath: artifact.path,

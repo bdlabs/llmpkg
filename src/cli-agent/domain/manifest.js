@@ -45,7 +45,8 @@ export function parseManifest(raw, repository) {
         description: raw.description ?? '',
         artifacts: (Array.isArray(raw.artifacts) ? raw.artifacts : []).map(a => ({
             ...a,
-            path: `${raw.name}/${raw.version}/${a.path}`
+            path: `${raw.name}/${raw.version}/${a.path}`,
+            installPath: `${raw.name}/${a.path}`
         })),
         dependencies: raw.dependencies ?? {},
         repository,

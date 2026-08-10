@@ -48,7 +48,7 @@ export function isPathSafe(path) {
  * @param {{ id: string, type: string, path: string }} params
  * @returns {Artifact}
  */
-export function createArtifact({ id, type, path }) {
+export function createArtifact({ id, type, path, installPath }) {
     if (!id || typeof id !== 'string') {
         throw new LlmpkgError(ERROR_CODES.INVALID_ARTIFACT, `Artifact id is required.`);
     }
@@ -65,5 +65,5 @@ export function createArtifact({ id, type, path }) {
             { id, path },
         );
     }
-    return Object.freeze({ id, type, path });
+    return Object.freeze({ id, type, path, installPath });
 }
