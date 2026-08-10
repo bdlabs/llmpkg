@@ -21,6 +21,7 @@ import {
     formatUninstallResult, formatInstalledList, formatError,
     formatRepoAddResult, formatRepositoryList,
 } from './adapters/output/text-formatter.js';
+import { theme } from './adapters/output/theme.js';
 import {
     formatSearchResultJson, formatPackageInfoJson, formatInstallResultJson,
     formatUninstallResultJson, formatInstalledListJson, formatErrorJson,
@@ -43,21 +44,28 @@ import { createNoOpFileSystem } from '../infrastructure/file-system/noop-file-sy
 import { createYamlConfigReader } from '../infrastructure/config/yaml-config-reader.js';
 
 import { join } from 'node:path';
-
 import { generateLogo } from './adapters/output/logo-generator.js';
 
 function getHelpText() {
-    return generateLogo('LLM PKG') + '\n\n' + `
-Usage:
-  llmpkg search <query> [--json]
-  llmpkg info <package>[@version] [--json]
-  llmpkg install [<package>[@version]] [--target <dir>] [--dry-run] [--json]
-  llmpkg uninstall <package> [--json]
-  llmpkg list [--json]
-  llmpkg repo add <name> <url>
-  llmpkg repo list [--json]
-  llmpkg help
-`.trim();
+    const cmd = theme.primary('llmpkg');
+    const b1 = theme.muted('[');
+    const b2 = theme.muted(']');
+    const opt = (name) => `${b1}${theme.label(name)}${b2}`;
+    const arg = (name) => theme.success(`<${name}>`);
+
+    // special parts:
+    const ver = theme.muted('[@version]');
+    const pkgOpt = `${b1}${arg('package')}${ver}${b2}`;
+
+    return generateLogo('LLM PKG') + '\n\n' + theme.label('Usage:') + '\n' +
+        `  ${cmd} ${theme.value('search')} ${arg('query')} ${opt('--json')}\n` +
+        `  ${cmd} ${theme.value('info')} ${arg('package')}${ver} ${opt('--json')}\n` +
+        `  ${cmd} ${theme.value('install')} ${pkgOpt} ${opt('--target <dir>')} ${opt('--dry-run')} ${opt('--json')}\n` +
+        `  ${cmd} ${theme.value('uninstall')} ${arg('package')} ${opt('--json')}\n` +
+        `  ${cmd} ${theme.value('list')} ${opt('--json')}\n` +
+        `  ${cmd} ${theme.value('repo add')} ${arg('name')} ${arg('url')}\n` +
+        `  ${cmd} ${theme.value('repo list')} ${opt('--json')}\n` +
+        `  ${cmd} ${theme.value('help')}`;
 }
 
 /**
