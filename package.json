@@ -1,0 +1,13 @@
+{
+  "name": "blue-diamond/llmpkg",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-isolation=none",
+    "build": "node scripts/build-cli.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

@@ -160,6 +160,9 @@ export async function runCli(argv = process.argv.slice(2)) {
 }
 
 // Entry point when run directly
-if (process.argv[1]?.endsWith('main.js')) {
+// Entry point when run directly
+import url from 'node:url';
+const isMain = process.argv[1] && import.meta.url === url.pathToFileURL(process.argv[1]).href;
+if (isMain || (process.argv[1] && process.argv[1].match(/(main\.js|index\.js|llmpkg)$/))) {
     void runCli();
 }
