@@ -44,9 +44,10 @@ import { createYamlConfigReader } from '../infrastructure/config/yaml-config-rea
 
 import { join } from 'node:path';
 
-const HELP_TEXT = `
-llmpkg — open protocol for LLM resource distribution
+import { generateLogo } from './adapters/output/logo-generator.js';
 
+function getHelpText() {
+    return generateLogo('LLM PKG') + '\n\n' + `
 Usage:
   llmpkg search <query> [--json]
   llmpkg info <package>[@version] [--json]
@@ -57,6 +58,7 @@ Usage:
   llmpkg repo list [--json]
   llmpkg help
 `.trim();
+}
 
 /**
  * Build the infrastructure dependencies (wiring).
@@ -87,7 +89,7 @@ export async function runCli(argv = process.argv.slice(2)) {
         useJson = parsed.json ?? false;
 
         if (parsed.command === 'help') {
-            process.stdout.write(HELP_TEXT + '\n');
+            process.stdout.write(getHelpText() + '\n');
             return;
         }
 
@@ -153,7 +155,7 @@ export async function runCli(argv = process.argv.slice(2)) {
             }
 
             default:
-                process.stdout.write(HELP_TEXT + '\n');
+                process.stdout.write(getHelpText() + '\n');
         }
     } catch (error) {
         const formatted = useJson ? formatErrorJson(error) : formatError(error);
