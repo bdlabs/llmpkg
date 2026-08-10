@@ -25,17 +25,17 @@ export function parseVersion(str) {
     if (typeof str !== 'string' || !str) {
         throw new LlmpkgError(ERROR_CODES.INVALID_MANIFEST, `Invalid version: "${str}"`);
     }
-    const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(str.trim());
+    const match = /^(\d+)(?:\.(\d+))?(?:\.(\d+))?$/.exec(str.trim());
     if (!match) {
         throw new LlmpkgError(
             ERROR_CODES.INVALID_MANIFEST,
-            `Version "${str}" does not follow MAJOR.MINOR.PATCH format.`,
+            `Version "${str}" does not follow semantic formatting (expected numbers separated by dots).`,
         );
     }
     return {
         major: Number(match[1]),
-        minor: Number(match[2]),
-        patch: Number(match[3]),
+        minor: Number(match[2] || 0),
+        patch: Number(match[3] || 0),
     };
 }
 
