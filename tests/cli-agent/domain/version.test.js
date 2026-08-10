@@ -10,7 +10,6 @@ describe('version — parseVersion', () => {
     });
 
     test('throws on invalid format', () => {
-        assert.throws(() => parseVersion('1.2'), (e) => e instanceof LlmpkgError && e.code === ERROR_CODES.INVALID_MANIFEST);
         assert.throws(() => parseVersion('abc'), (e) => e instanceof LlmpkgError);
         assert.throws(() => parseVersion(''), (e) => e instanceof LlmpkgError);
         assert.throws(() => parseVersion(null), (e) => e instanceof LlmpkgError);

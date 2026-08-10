@@ -31,6 +31,7 @@ function makeDeps(overrides = {}) {
         packageStore: createNullPackageStore(),
         fileSystem: createNoOpFileSystem(),
         configReader: createNullConfigReader(),
+        config: { repositories: [] },
         ...overrides,
     };
 }
