@@ -5,46 +5,9 @@
  */
 
 import { createDefaultConfig } from '../domain/contracts/config-reader.js';
-import { LlmpkgError, ERROR_CODES } from '../domain/errors.js';
+import { normalizeRepositoryInput, repositoryEndpoint } from './repository-credentials.js';
 
 const LOCAL_CREDENTIAL_WARNING = 'Project-scoped repository credentials may be shared with the project, while encrypted passwords can only be decrypted by the current user. Prefer --global for private credentials.';
-
-function normalizeRepositoryInput(value) {
-    if (!value.includes('://')) {
-        const scp = /^(?:([^/@\s:]+)@)?([^/:\s]+):(.+)$/.exec(value);
-        if (!scp) return { url: value };
-        return { url: `${scp[2]}:${scp[3]}`, username: scp[1] };
-    }
-
-    let parsed;
-    try {
-        parsed = new URL(value);
-    } catch {
-        return { url: value };
-    }
-
-    try {
-        const embedded = {
-            username: parsed.username ? decodeURIComponent(parsed.username) : undefined,
-            password: parsed.password ? decodeURIComponent(parsed.password) : undefined,
-        };
-        parsed.username = '';
-        parsed.password = '';
-        return { url: parsed.toString(), ...embedded };
-    } catch {
-        throw new LlmpkgError(ERROR_CODES.AUTHENTICATION_REQUIRED, 'The repository URL contains malformed credentials.');
-    }
-}
-
-function endpoint(value) {
-    try {
-        const url = new URL(value);
-        return `${url.protocol}//${url.hostname}:${url.port}`;
-    } catch {
-        const scp = /^(?:[^/@\s:]+@)?([^/:\s]+):/.exec(value);
-        return scp ? `ssh://${scp[1]}` : value;
-    }
-}
 
 /**
  * Execute the repository add workflow.
@@ -75,7 +38,7 @@ export async function execute({ name, url, global = false, username, password },
     let savedRepository;
     if (index !== -1) {
         const current = config.repositories[index];
-        const sameEndpoint = endpoint(current.url) === endpoint(url);
+        const sameEndpoint = repositoryEndpoint(current.url) === repositoryEndpoint(url);
         savedRepository = {
             ...current,
             url,

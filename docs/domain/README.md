@@ -6,6 +6,7 @@ status: current
 last_updated: 2026-08-11
 related:
   - ../application/README.md
+  - ../modules/repositories/README.md
 ---
 
 # llmpkg — Model Domenowy
@@ -22,5 +23,6 @@ Moduł definiuje rdzeń protokołu llmpkg: typy danych, reguły walidacji i algo
 
 - Reguły granic warstw: skill `layered-architecture`.
 - Use case'y wywołujące ten moduł: [Application](../application/README.md).
+- Pełny przepływ kontraktów repozytoriów: [Repozytoria](../modules/repositories/README.md).
 - Specyfikacja protokołu: `cli-agent/opis.md`.
 - Wytyczne architektoniczne: `cli-agent/wytyczne.md`.

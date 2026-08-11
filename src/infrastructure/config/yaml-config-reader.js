@@ -14,40 +14,49 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
 import { createDefaultConfig } from '../../domain/contracts/config-reader.js';
+import { normalizeRepositoryInput, repositoryEndpoint } from '../../application/repository-credentials.js';
 
 const KEY_PREFIX = 'llmpkg-key-v1:';
-const PASSWORD_PREFIX = 'llmpkg-password-v1:';
-const PASSWORD_AAD = Buffer.from('llmpkg:repository-password:v1');
+const LEGACY_PASSWORD_PREFIX = 'llmpkg-password-v1:';
+const PASSWORD_PREFIX = 'llmpkg-password-v2:';
+const LEGACY_PASSWORD_AAD = Buffer.from('llmpkg:repository-password:v1');
 
-async function restrictPermissions(path, mode) {
+export async function enforcePrivatePermissions(path, mode, { platform = process.platform, chmodImpl = chmod } = {}) {
     try {
-        await chmod(path, mode);
+        await chmodImpl(path, mode);
     } catch (error) {
-        if (!['EPERM', 'ENOSYS', 'EINVAL'].includes(error?.code)) throw error;
+        const unsupportedOnWindows = platform === 'win32' && ['ENOSYS', 'EINVAL'].includes(error?.code);
+        if (!unsupportedOnWindows) throw error;
     }
 }
 
 async function ensurePrivateDirectory(directory) {
     await mkdir(directory, { recursive: true, mode: 0o700 });
-    await restrictPermissions(directory, 0o700);
+    await enforcePrivatePermissions(directory, 0o700);
+}
+
+async function loadKey(keyPath) {
+    await enforcePrivatePermissions(dirname(keyPath), 0o700);
+    const stored = (await readFile(keyPath, 'utf8')).trim();
+    if (!stored.startsWith(KEY_PREFIX)) throw new Error('The llmpkg credential key has an unsupported format.');
+    const key = Buffer.from(stored.slice(KEY_PREFIX.length), 'base64');
+    if (key.length !== 32) throw new Error('The llmpkg credential key is invalid.');
+    await enforcePrivatePermissions(keyPath, 0o600);
+    return key;
 }
 
 async function loadOrCreateKey(keyPath) {
     try {
-        const stored = (await readFile(keyPath, 'utf8')).trim();
-        if (!stored.startsWith(KEY_PREFIX)) throw new Error('The llmpkg credential key has an unsupported format.');
-        const key = Buffer.from(stored.slice(KEY_PREFIX.length), 'base64');
-        if (key.length !== 32) throw new Error('The llmpkg credential key is invalid.');
-        await restrictPermissions(keyPath, 0o600);
-        return key;
+        return await loadKey(keyPath);
     } catch (error) {
         if (error?.code !== 'ENOENT') throw error;
     }
 
+    await ensurePrivateDirectory(dirname(keyPath));
     const key = randomBytes(32);
     try {
         await writeFile(keyPath, `${KEY_PREFIX}${key.toString('base64')}\n`, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
-        await restrictPermissions(keyPath, 0o600);
+        await enforcePrivatePermissions(keyPath, 0o600);
         return key;
     } catch (error) {
         if (error?.code === 'EEXIST') return loadOrCreateKey(keyPath);
@@ -55,54 +64,85 @@ async function loadOrCreateKey(keyPath) {
     }
 }
 
-function encryptPassword(password, key) {
+function passwordAad(url) {
+    return Buffer.from(`llmpkg:repository-password:v2:${repositoryEndpoint(url)}`);
+}
+
+function encryptPassword(password, key, url) {
     const nonce = randomBytes(12);
     const cipher = createCipheriv('aes-256-gcm', key, nonce);
-    cipher.setAAD(PASSWORD_AAD);
+    cipher.setAAD(passwordAad(url));
     const ciphertext = Buffer.concat([cipher.update(password, 'utf8'), cipher.final()]);
     const tag = cipher.getAuthTag();
     return `${PASSWORD_PREFIX}${nonce.toString('base64')}:${tag.toString('base64')}:${ciphertext.toString('base64')}`;
 }
 
-function decryptPassword(value, key) {
-    if (typeof value !== 'string' || !value.startsWith(PASSWORD_PREFIX)) {
+function decryptPassword(value, key, url) {
+    const prefix = value?.startsWith(PASSWORD_PREFIX)
+        ? PASSWORD_PREFIX
+        : value?.startsWith(LEGACY_PASSWORD_PREFIX) ? LEGACY_PASSWORD_PREFIX : undefined;
+    if (!prefix) {
         throw new Error('The encrypted repository password has an unsupported format.');
     }
-    const [nonceValue, tagValue, ciphertextValue] = value.slice(PASSWORD_PREFIX.length).split(':');
+    const [nonceValue, tagValue, ciphertextValue] = value.slice(prefix.length).split(':');
     const nonce = Buffer.from(nonceValue ?? '', 'base64');
     const tag = Buffer.from(tagValue ?? '', 'base64');
     if (nonce.length !== 12 || tag.length !== 16 || ciphertextValue === undefined) {
         throw new Error('The encrypted repository password is invalid.');
     }
     const decipher = createDecipheriv('aes-256-gcm', key, nonce);
-    decipher.setAAD(PASSWORD_AAD);
+    decipher.setAAD(prefix === LEGACY_PASSWORD_PREFIX ? LEGACY_PASSWORD_AAD : passwordAad(url));
     decipher.setAuthTag(tag);
     return Buffer.concat([decipher.update(Buffer.from(ciphertextValue, 'base64')), decipher.final()]).toString('utf8');
 }
 
 async function materializePasswords(config, keyPath) {
-    const encrypted = (config?.repositories ?? []).filter((repo) => repo.passwordEncrypted !== undefined);
-    if (encrypted.length === 0) return config;
-    const key = await loadOrCreateKey(keyPath);
+    if (!config) return config;
+    const encrypted = (config.repositories ?? []).some((repo) => repo.passwordEncrypted !== undefined);
+    const key = encrypted ? await loadKey(keyPath) : undefined;
     return {
         ...config,
-        repositories: (config.repositories ?? []).map((repo) => repo.passwordEncrypted === undefined ? repo : {
-            ...repo,
-            password: decryptPassword(repo.passwordEncrypted, key),
+        repositories: (config.repositories ?? []).map((repo) => {
+            const normalized = normalizeRepositoryInput(repo.url);
+            const { passwordEncrypted, password: legacyPassword, username: configuredUsername, ...safe } = repo;
+            const decrypted = passwordEncrypted === undefined
+                ? undefined
+                : decryptPassword(passwordEncrypted, key, normalized.url);
+            const username = configuredUsername ?? normalized.username;
+            const password = legacyPassword ?? decrypted ?? normalized.password;
+            return {
+                ...safe,
+                url: normalized.url,
+                ...(username !== undefined ? { username } : {}),
+                ...(password !== undefined ? { password } : {}),
+            };
         }),
     };
 }
 
 async function protectPasswords(config, keyPath) {
-    const passwords = (config?.repositories ?? []).filter((repo) => repo.password !== undefined);
-    if (passwords.length === 0) return config;
-    const key = await loadOrCreateKey(keyPath);
+    const repositories = (config?.repositories ?? []).map((repo) => {
+        const normalized = normalizeRepositoryInput(repo.url);
+        const { passwordEncrypted, password: configuredPassword, username: configuredUsername, ...safe } = repo;
+        return {
+            ...safe,
+            url: normalized.url,
+            username: configuredUsername ?? normalized.username,
+            password: configuredPassword ?? normalized.password,
+        };
+    });
+    const key = repositories.some((repo) => repo.password !== undefined)
+        ? await loadOrCreateKey(keyPath)
+        : undefined;
     return {
         ...config,
-        repositories: (config.repositories ?? []).map((repo) => {
-            if (repo.password === undefined) return repo;
-            const { password, ...safe } = repo;
-            return { ...safe, passwordEncrypted: encryptPassword(password, key) };
+        repositories: repositories.map((repo) => {
+            const { password, username, ...safe } = repo;
+            return {
+                ...safe,
+                ...(username !== undefined ? { username } : {}),
+                ...(password !== undefined ? { passwordEncrypted: encryptPassword(password, key, repo.url) } : {}),
+            };
         }),
     };
 }
@@ -113,18 +153,27 @@ async function protectPasswords(config, keyPath) {
  * @returns {Promise<object|null>}
  */
 async function readJsonConfig(filePath) {
+    let text;
     try {
-        const text = await readFile(filePath, 'utf8');
-        return JSON.parse(text);
-    } catch {
-        return null;
+        text = await readFile(filePath, 'utf8');
+    } catch (error) {
+        if (error?.code === 'ENOENT') return null;
+        throw error;
     }
+    await enforcePrivatePermissions(dirname(filePath), 0o700);
+    await enforcePrivatePermissions(filePath, 0o600);
+    try { return JSON.parse(text); } catch { return null; }
 }
 
 async function writeJsonConfig(filePath, config) {
     await ensurePrivateDirectory(dirname(filePath));
+    try {
+        await enforcePrivatePermissions(filePath, 0o600);
+    } catch (error) {
+        if (error?.code !== 'ENOENT') throw error;
+    }
     await writeFile(filePath, JSON.stringify(config, null, 2), { encoding: 'utf8', mode: 0o600 });
-    await restrictPermissions(filePath, 0o600);
+    await enforcePrivatePermissions(filePath, 0o600);
 }
 
 /**

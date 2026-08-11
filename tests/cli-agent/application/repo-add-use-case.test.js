@@ -52,6 +52,15 @@ describe('repository credentials', () => {
         assert.equal(configReader.written.repositories[0].username, 'git');
     });
 
+    test('rejects malformed credential URLs before persistence with a safe error', async () => {
+        const configReader = reader();
+        await assert.rejects(
+            () => execute({ name: 'private', url: 'https://alice:secret@' }, { configReader }),
+            (error) => error.message === 'The repository URL is invalid.' && !error.message.includes('secret'),
+        );
+        assert.equal(configReader.written, undefined);
+    });
+
     test('never exposes passwords through repository formatters', () => {
         const repository = { name: 'private', url: 'https://alice:secret@example.test/repo.git', username: 'alice', password: 'secret' };
         for (const output of [
@@ -62,6 +71,15 @@ describe('repository credentials', () => {
         ]) {
             assert.equal(output.includes('secret'), false);
             assert.equal(output.includes('alice:secret'), false);
+        }
+    });
+
+    test('redacts malformed URLs instead of returning possible userinfo', () => {
+        const repository = { name: 'private', url: 'https://alice:secret@', authenticated: true };
+        for (const output of [formatRepositoryListJson([repository]), formatRepositoryList([repository])]) {
+            assert.equal(output.includes('alice'), false);
+            assert.equal(output.includes('secret'), false);
+            assert.match(output, /redacted invalid repository URL/);
         }
     });
 

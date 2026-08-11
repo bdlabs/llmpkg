@@ -1,7 +1,7 @@
 import { after, before, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
 import { promisify } from 'node:util';
@@ -46,5 +46,19 @@ describe('repo add CLI credential warnings', () => {
         assert.equal(result.warnings.length, 1);
         assert.equal(stdout.includes('secret'), false);
         assert.equal(stderr, '');
+    });
+
+    test('rejects a malformed credential URL without exposing or persisting its secret', async () => {
+        const cwd = join(root, 'invalid-project');
+        let failure;
+        try {
+            await run(['repo', 'add', 'private', 'https://alice:secret@'], cwd);
+        } catch (error) {
+            failure = error;
+        }
+        assert.ok(failure);
+        assert.equal(`${failure.stdout}${failure.stderr}`.includes('secret'), false);
+        assert.match(failure.stderr, /The repository is currently unavailable or unreachable/);
+        await assert.rejects(() => access(join(cwd, '.llmpkg', 'llmpkg.json')));
     });
 });

@@ -15,7 +15,8 @@ function sanitizeUrl(value) {
         url.password = '';
         return url.toString();
     } catch {
-        return value;
+        if (typeof value === 'string' && !value.includes('://') && !value.includes('@')) return value;
+        return '[redacted invalid repository URL]';
     }
 }
 

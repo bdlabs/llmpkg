@@ -26,7 +26,7 @@ Warstwa CLI łączy trzy podwarstwy: ApplicationLayer (routing, DI), AdapterLaye
 
 ## Budowanie i użycie
 
-Projekt może być zbudowany do pakietu CLI w katalogu `dist/cli` za pomocą bundlera `esbuild`. Pakiet zawiera `index.js`, `package.json` i wymagany przez uwierzytelnianie Git plik `git-askpass.js`; klient `git` pozostaje zależnością systemową.
+Projekt może być zbudowany do pakietu CLI w katalogu `dist/cli` za pomocą bundlera `esbuild`. Pakiet zawiera `index.js`, `package.json` oraz wymagane przez uwierzytelnianie Git helpery `git-askpass.js` i `git-ssh.js`; klient `git` i program `ssh` pozostają zależnościami systemowymi.
 
 1. **Zbuduj pakiet CLI**:
    ```bash
@@ -79,7 +79,7 @@ Projekt może być zbudowany do pakietu CLI w katalogu `dist/cli` za pomocą bun
    - **GitHub**: `github:wlasciciel/repozytorium` (pobiera z gałęzi `main` przez raw.githubusercontent.com)
    - **Dowolny Git**: `ssh://`, `git://`, składnia `user@host:path` albo adres kończący się `.git`
 
-   `--username` i `--password` zapisują opcjonalne poświadczenia. Bez `--global` konfiguracja trafia do lokalnego `.llmpkg/llmpkg.json`; z `--global` do `~/.config/llmpkg/config.json`. Wyniki tekstowe i JSON nie wypisują sekretów i redagują dane osadzone w URL. Hasło pozostaje jednak jawne w pliku konfiguracji; należy chronić jego uprawnienia, a w automatyzacji preferować klucze SSH.
+   `--username` i `--password` zapisują opcjonalne poświadczenia. Można je także osadzić w URL, ale flagi mają pierwszeństwo, a userinfo jest usuwane przed zapisem. Bez `--global` konfiguracja trafia do lokalnego `.llmpkg/llmpkg.json`; z `--global` do `~/.config/llmpkg/config.json`. Hasło jest szyfrowane AES-256-GCM kluczem z `~/.config/llmpkg/credentials.key`; jawna wartość istnieje tylko w pamięci procesu. Lokalne poświadczenia powodują angielskie ostrzeżenie na stderr w trybie tekstowym lub w `warnings[]` poprawnego dokumentu JSON. Wyniki nigdy nie wypisują sekretów, a niepoprawny URL z możliwym userinfo jest odrzucany lub prezentowany jako zredagowany. W automatyzacji nadal preferowane są klucze SSH.
 
    **Przeszukiwanie repozytorium**
    Wyszukiwanie dostępnych paczek z promptami lub narzędziami (np. dla słowa kluczowego `postgres`):

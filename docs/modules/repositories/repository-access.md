@@ -18,7 +18,7 @@ Moduł zapisuje nazwane konfiguracje repozytoriów, wybiera adapter transportu i
 
 ## Publiczne wejścia i konfiguracja
 
-`llmpkg repo add <name> <url> [--username <login>] [--password <password>] [--global]` zapisuje nazwę, oczyszczony URL, priorytet oraz opcjonalny login i zaszyfrowane hasło w `.llmpkg/llmpkg.json` lub globalnym `~/.config/llmpkg/config.json`. Userinfo osadzone w URL jest wydobywane przed zapisem i zachowuje się jak dane z flag; jawne `--username` i `--password` mają pierwszeństwo. Zmiana protokołu, hosta lub portu usuwa stare poświadczenia; przy tym samym endpointcie pominięte wartości są zachowywane.
+`llmpkg repo add <name> <url> [--username <login>] [--password <password>] [--global]` zapisuje nazwę, oczyszczony URL, priorytet oraz opcjonalny login i zaszyfrowane hasło w `.llmpkg/llmpkg.json` lub globalnym `~/.config/llmpkg/config.json`. Userinfo osadzone w URL jest wydobywane przed zapisem i zachowuje się jak dane z flag; jawne `--username` i `--password` mają pierwszeństwo. Niepoprawny URI-like URL jest odrzucany przed zapisem bez odbijania userinfo w błędzie. Zmiana protokołu, hosta lub portu usuwa każdą starą reprezentację poświadczeń; przy tym samym endpointcie pominięte wartości są zachowywane.
 
 Przykład dodania prywatnego repozytorium SSH z loginem i hasłem do konfiguracji globalnej:
 
@@ -57,9 +57,9 @@ Build CLI zawiera `index.js`, `package.json`, `git-askpass.js` i `git-ssh.js`. W
 
 ## Persystencja, uprawnienia i ograniczenia
 
-Adapter konfiguracji odszyfrowuje hasła wyłącznie w pamięci. Starsze wpisy z jawnym polem `password` są nadal odczytywane i zostają zaszyfrowane przy następnym zapisie konfiguracji. AES-GCM uwierzytelnia ciphertext; uszkodzenie danych albo użycie innego klucza powoduje odrzucenie odczytu zamiast zwrócenia zmienionego hasła.
+Adapter konfiguracji odszyfrowuje hasła wyłącznie w pamięci i nigdy nie przekazuje storage-only pola ciphertextu przez kontrakt `ConfigReader`. Starsze wpisy z jawnym polem `password` albo userinfo URL są nadal odczytywane, oczyszczane i zostają zaszyfrowane przy następnym zapisie; osobne pola legacy mają pierwszeństwo przed userinfo. AES-GCM uwierzytelnia ciphertext i wiąże format v2 z kanonicznym endpointem repozytorium. Uszkodzenie, transplantacja do innego endpointu albo użycie innego klucza powoduje odrzucenie odczytu zamiast zwrócenia zmienionego hasła. Wersja v1 jest odczytywana migracyjnie i zapisywana jako v2 przy kolejnym zapisie.
 
-Na systemach POSIX katalogi konfiguracji otrzymują tryb `0700`, a pliki klucza i konfiguracji `0600`. Na Windows Node.js nie udostępnia w tym mechanizmie pełnego zarządzania ACL: aplikacja ustawia najlepsze przenośne odpowiedniki, ale faktyczna izolacja zależy od ACL profilu użytkownika. Plik projektu zaszyfrowany kluczem jednego użytkownika nie jest odszyfrowywalny przez innego użytkownika ani po utracie `credentials.key`; klucz nie powinien być umieszczany w projekcie ani systemie kontroli wersji.
+Na systemach POSIX katalogi konfiguracji otrzymują tryb `0700`, a pliki klucza i konfiguracji `0600`; błąd ustawienia trybu przerywa operację. Na Windows ignorowane są tylko kody oznaczające brak obsługi `chmod`, natomiast rzeczywiste błędy dostępu nadal przerywają zapis. Node.js nie udostępnia w tym mechanizmie pełnego zarządzania ACL: faktyczna izolacja zależy także od ACL profilu użytkownika. Plik projektu zaszyfrowany kluczem jednego użytkownika nie jest odszyfrowywalny przez innego użytkownika ani po utracie `credentials.key`; klucz nie powinien być umieszczany w projekcie ani systemie kontroli wersji.
 
 ## Błędy
 

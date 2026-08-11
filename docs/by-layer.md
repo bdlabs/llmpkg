@@ -1,5 +1,7 @@
 # Dokumentacja według warstw
 
+Lista obejmuje ten sam zestaw modułów co [INDEX.md](./INDEX.md). Moduł Repozytoria jest dokumentem domenowym prowadzącym przez cały przepływ, a huba Domain należy używać jako kanonicznej trasy do reguł i kontraktów BusinessLogic.
+
 | Warstwa | Moduły |
 |---|---|
 | BusinessLogic | [Domain](./domain/README.md) |
