@@ -1,6 +1,6 @@
 ---
 title: llmpkg — Domain Model
-module: llmpkg-domain
+module: repositories
 layers: [BusinessLogic]
 status: current
 last_updated: 2026-08-11

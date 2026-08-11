@@ -9,16 +9,26 @@ export function normalizeRepositoryInput(value) {
         throw new LlmpkgError(ERROR_CODES.REPOSITORY_UNAVAILABLE, 'The repository URL is invalid.');
     }
 
-    if (!value.includes('://')) {
+    const scheme = /^([A-Za-z][A-Za-z0-9+.-]*):/.exec(value)?.[1]?.toLowerCase();
+    const hierarchicalScheme = ['http', 'https', 'ssh', 'git', 'file'].includes(scheme);
+    if (!hierarchicalScheme) {
         const scp = /^(?:([^/@\s:]+)@)?([^/:\s]+):(.+)$/.exec(value);
-        if (!scp) return { url: value };
-        return { url: `${scp[2]}:${scp[3]}`, username: scp[1] };
+        if (scp && (!value.includes('@') || value.indexOf('@') < value.indexOf(':'))) {
+            return { url: `${scp[2]}:${scp[3]}`, username: scp[1] };
+        }
+        if (value.includes('@') || (scheme && value.slice(scheme.length + 1).includes(':'))) {
+            throw new LlmpkgError(ERROR_CODES.REPOSITORY_UNAVAILABLE, 'The repository URL is invalid.');
+        }
+        return { url: value };
     }
 
     let parsed;
     try {
         parsed = new URL(value);
     } catch {
+        throw new LlmpkgError(ERROR_CODES.REPOSITORY_UNAVAILABLE, 'The repository URL is invalid.');
+    }
+    if (parsed.protocol !== 'file:' && !parsed.hostname) {
         throw new LlmpkgError(ERROR_CODES.REPOSITORY_UNAVAILABLE, 'The repository URL is invalid.');
     }
 

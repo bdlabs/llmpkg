@@ -1,6 +1,6 @@
 ---
 title: llmpkg CLI Layer
-module: llmpkg-cli
+module: repositories
 layers: [ApplicationLayer, AdapterLayer, UserInterface]
 status: current
 last_updated: 2026-08-11
@@ -9,11 +9,11 @@ related:
   - ../infrastructure/README.md
 ---
 
-# llmpkg — CLI Layer
+# llmpkg — referencja warstw CLI
 
-Warstwa CLI łączy trzy podwarstwy: ApplicationLayer (routing, DI), AdapterLayer (parsowanie argv, formatowanie output) i UserInterface (stdout/stderr).
+Ten dokument jest przekrojową referencją modułu Repozytoria, a nie osobnym modułem biznesowym. CLI łączy ApplicationLayer (routing, DI), AdapterLayer (parsowanie argv, formatowanie output) i UserInterface (stdout/stderr).
 
-## Dokumenty w tym module
+## Dokumenty referencyjne
 
 | Plik | Temat | Warstwy | Status |
 |---|---|---|---|

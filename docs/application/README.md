@@ -1,6 +1,6 @@
 ---
 title: llmpkg ApplicationLogic
-module: llmpkg-application
+module: repositories
 layers: [ApplicationLogic]
 status: current
 last_updated: 2026-08-11
@@ -9,11 +9,11 @@ related:
   - ../infrastructure/README.md
 ---
 
-# llmpkg — ApplicationLogic (Use Cases)
+# llmpkg — referencja ApplicationLogic
 
-Moduł orkiestruje przepływ danych między domeną a infrastrukturą. Use case'y nie wiedzą o HTTP, argv ani ścieżkach plików — wszystkie efekty uboczne przechodzą przez kontrakty.
+Ten dokument jest przekrojową referencją modułu Repozytoria, a nie osobnym modułem biznesowym. ApplicationLogic orkiestruje przepływ danych między domeną a infrastrukturą. Use case'y nie wiedzą o HTTP, argv ani ścieżkach plików — wszystkie efekty uboczne przechodzą przez kontrakty.
 
-## Dokumenty w tym module
+## Dokumenty referencyjne
 
 | Plik | Temat | Warstwy | Status |
 |---|---|---|---|

@@ -61,6 +61,28 @@ describe('repository credentials', () => {
         assert.equal(configReader.written, undefined);
     });
 
+    test('canonicalizes alternate HTTPS syntax before extracting credentials', async () => {
+        for (const input of [
+            'https:alice:secret@example.test/repo.git',
+            'https:/alice:secret@example.test/repo.git',
+        ]) {
+            const configReader = reader();
+            await execute({ name: 'private', url: input }, { configReader });
+            assert.equal(configReader.written.repositories[0].url, 'https://example.test/repo.git');
+            assert.equal(configReader.written.repositories[0].username, 'alice');
+            assert.equal(configReader.written.repositories[0].password, 'secret');
+        }
+    });
+
+    test('rejects ambiguous credential-shaped colon and at-sign input', async () => {
+        const configReader = reader();
+        await assert.rejects(
+            () => execute({ name: 'private', url: 'alice:secret@example.test/repo.git' }, { configReader }),
+            (error) => error.message === 'The repository URL is invalid.',
+        );
+        assert.equal(configReader.written, undefined);
+    });
+
     test('never exposes passwords through repository formatters', () => {
         const repository = { name: 'private', url: 'https://alice:secret@example.test/repo.git', username: 'alice', password: 'secret' };
         for (const output of [

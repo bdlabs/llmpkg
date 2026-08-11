@@ -1,6 +1,6 @@
 ---
 title: llmpkg — Use Cases
-module: llmpkg-application
+module: repositories
 layers: [ApplicationLogic]
 status: current
 last_updated: 2026-08-11
@@ -117,7 +117,13 @@ Use case nie zmienia swojej logiki — DIP w praktyce.
 
 **Command:** `{ name, url, global?, username?, password? }`
 
-Tworzy lub aktualizuje wpis repozytorium przez `ConfigReader`. Najpierw wydobywa username/password z URL i oczyszcza URL; jawne pola Command DTO mają pierwszeństwo, a niepoprawny URI-like URL jest bezpiecznie odrzucany przed zapisem. Przy tym samym endpointcie pominięte poświadczenia są zachowywane; zmiana protokołu, hosta lub portu usuwa stare poświadczenia, chyba że nowe pochodzą z flag lub URL. Kontrakt operuje wyłącznie na logicznych `username`/`password` i nie zna formatu szyfrowanej persystencji. Wynik odzwierciedla finalny stan przez `authenticated: boolean`; hasło nie wraca do prezentacji. Dla lokalnego zapisu z poświadczeniami wynik zawiera bezpieczne angielskie `warnings[]`, które kanał dostawy prezentuje odpowiednio do formatu.
+Tworzy lub aktualizuje wpis repozytorium przez `ConfigReader`. Najpierw rozpoznaje obsługiwany schemat URI niezależnie od dokładnego zapisu `://`, wydobywa username/password i oczyszcza URL; jawne pola Command DTO mają pierwszeństwo, a niepoprawny lub niejednoznaczny credential-shaped URL jest bezpiecznie odrzucany przed zapisem. Przy tym samym endpointcie pominięte poświadczenia są zachowywane; zmiana protokołu, hosta lub portu usuwa stare poświadczenia, chyba że nowe pochodzą z flag lub URL. Kontrakt operuje wyłącznie na logicznych `username`/`password` i nie zna formatu szyfrowanej persystencji. Wynik odzwierciedla finalny stan przez `authenticated: boolean`; hasło nie wraca do prezentacji. Dla lokalnego zapisu z poświadczeniami wynik zawiera bezpieczne angielskie `warnings[]`, które kanał dostawy prezentuje odpowiednio do formatu.
+
+---
+
+## ConfigResolver (`config-resolver.js`)
+
+`resolveConfig(configReader)` jest właścicielem scalania konfiguracji zapisanej: konfiguracja projektu nadpisuje konfigurację globalną, a brakujące wartości globalne pochodzą z wartości domyślnych dostarczanych przez `ConfigReader`. Flagi kanału dostawy nie są scalane w resolverze; pozostają polami Command DTO przekazywanymi do odpowiednich use case'ów.
 
 ---
 

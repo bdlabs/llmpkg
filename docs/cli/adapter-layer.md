@@ -1,6 +1,6 @@
 ---
 title: llmpkg — CLI Adapter Layer
-module: llmpkg-cli
+module: repositories
 layers: [ApplicationLayer, AdapterLayer, UserInterface]
 status: current
 last_updated: 2026-08-11
@@ -39,7 +39,7 @@ Tłumaczy `process.argv.slice(2)` na Command DTO. Wyłącznie translacja formatu
 | `install [<pkg>[@ver]] [--target <dir>] [--dry-run]` | `{ command: 'install', packageName?, version?, targetDir, dryRun }` |
 | `uninstall <pkg>` | `{ command: 'uninstall', packageName }` |
 | `list` | `{ command: 'list' }` |
-| `repo add <name> <url> [--username <login>] [--password <password>]` | `{ command: 'repo', subcommand: 'add', name, url, username?, password? }` |
+| `repo add <name> <url> [--username <login>] [--password <password>] [--global]` | `{ command: 'repo', subcommand: 'add', name, url, username?, password?, global }` |
 | `repo list` | `{ command: 'repo', subcommand: 'list' }` |
 | (brak lub help) | `{ command: 'help' }` |
 
@@ -119,11 +119,9 @@ function buildDeps({ config, dryRun }) {
 
 ---
 
-## Konfiguracja hierarchii pierwszeństwa
+## Przekazanie konfiguracji
 
 ```
-CLI arg (--target, --repo)
-  ↓
 konfiguracja projektu (./.llmpkg/llmpkg.json)
   ↓
 konfiguracja użytkownika (~/.config/llmpkg/config.json)
@@ -131,4 +129,4 @@ konfiguracja użytkownika (~/.config/llmpkg/config.json)
 domyślna wartość
 ```
 
-Scalanie konfiguracji odbywa się w `runCli()` — jedyne miejsce świadome pełnej hierarchii.
+Powyższą hierarchię konfiguracji zapisanej realizuje `resolveConfig()` w `application/config-resolver.js` (ApplicationLogic). Wartości flag CLI, np. `--target` i `--repo`, pozostają polami Command DTO przekazywanymi osobno. `runCli()` jedynie dostarcza `ConfigReader`, przekazuje DTO i wykonuje wiring wybranego repozytorium; nie jest właścicielem reguł hierarchii konfiguracji.

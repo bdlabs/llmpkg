@@ -1,7 +1,7 @@
 import { after, before, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { access, mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
 import { promisify } from 'node:util';
@@ -60,5 +60,21 @@ describe('repo add CLI credential warnings', () => {
         assert.equal(`${failure.stdout}${failure.stderr}`.includes('secret'), false);
         assert.match(failure.stderr, /The repository is currently unavailable or unreachable/);
         await assert.rejects(() => access(join(cwd, '.llmpkg', 'llmpkg.json')));
+    });
+
+    test('canonicalizes alternate HTTPS credential syntax without plaintext persistence or output leaks', async () => {
+        for (const [suffix, repositoryUrl] of [
+            ['scheme-only', 'https:alice:secret@example.test/repo.git'],
+            ['single-slash', 'https:/alice:secret@example.test/repo.git'],
+        ]) {
+            const cwd = join(root, `alternate-${suffix}`);
+            const { stdout, stderr } = await run(['repo', 'add', 'private', repositoryUrl], cwd);
+            assert.equal(`${stdout}${stderr}`.includes('secret'), false);
+            const persisted = await readFile(join(cwd, '.llmpkg', 'llmpkg.json'), 'utf8');
+            assert.equal(persisted.includes('secret'), false);
+            assert.equal(persisted.includes('alice@'), false);
+            assert.match(persisted, /"url": "https:\/\/example\.test\/repo\.git"/);
+            assert.match(persisted, /llmpkg-password-v2:/);
+        }
     });
 });

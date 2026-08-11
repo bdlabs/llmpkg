@@ -1,7 +1,7 @@
 ---
 title: Repozytoria pakietów
 module: repositories
-layers: [ApplicationLogic, ApplicationLayer, AdapterLayer, UserInterface]
+layers: [BusinessLogic, ApplicationLogic, ApplicationLayer, AdapterLayer, UserInterface]
 status: current
 last_updated: 2026-08-11
 related:

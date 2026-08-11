@@ -1,7 +1,7 @@
 ---
 title: Dostęp do repozytoriów
 module: repositories
-layers: [ApplicationLogic, ApplicationLayer, AdapterLayer, UserInterface]
+layers: [BusinessLogic, ApplicationLogic, ApplicationLayer, AdapterLayer, UserInterface]
 status: current
 last_updated: 2026-08-11
 related:
@@ -14,11 +14,11 @@ related:
 
 ## Cel i odpowiedzialności
 
-Moduł zapisuje nazwane konfiguracje repozytoriów, wybiera adapter transportu i udostępnia aplikacji kontrakty `RepositoryIndex`, `ManifestFetcher` oraz `ArtifactDownloader`. CLI jest kanałem konfiguracji i prezentacji; reguły aktualizacji wpisu realizuje `RepoAddUseCase`, a operacje sieciowe adaptery infrastruktury.
+Moduł definiuje w BusinessLogic kontrakty `ConfigReader`, `RepositoryIndex`, `ManifestFetcher` oraz `ArtifactDownloader`, zapisuje nazwane konfiguracje repozytoriów i wybiera adapter transportu. CLI jest kanałem konfiguracji i prezentacji; reguły aktualizacji wpisu realizuje `RepoAddUseCase`, a operacje sieciowe adaptery infrastruktury.
 
 ## Publiczne wejścia i konfiguracja
 
-`llmpkg repo add <name> <url> [--username <login>] [--password <password>] [--global]` zapisuje nazwę, oczyszczony URL, priorytet oraz opcjonalny login i zaszyfrowane hasło w `.llmpkg/llmpkg.json` lub globalnym `~/.config/llmpkg/config.json`. Userinfo osadzone w URL jest wydobywane przed zapisem i zachowuje się jak dane z flag; jawne `--username` i `--password` mają pierwszeństwo. Niepoprawny URI-like URL jest odrzucany przed zapisem bez odbijania userinfo w błędzie. Zmiana protokołu, hosta lub portu usuwa każdą starą reprezentację poświadczeń; przy tym samym endpointcie pominięte wartości są zachowywane.
+`llmpkg repo add <name> <url> [--username <login>] [--password <password>] [--global]` zapisuje nazwę, oczyszczony URL, priorytet oraz opcjonalny login i zaszyfrowane hasło w `.llmpkg/llmpkg.json` lub globalnym `~/.config/llmpkg/config.json`. Userinfo osadzone w URL jest wydobywane przed zapisem i zachowuje się jak dane z flag; jawne `--username` i `--password` mają pierwszeństwo. Obsługiwane schematy URI są rozpoznawane także bez dokładnego `://`, dlatego alternatywne formy HTTPS są bezpiecznie kanonikalizowane. Niepoprawny lub niejednoznaczny credential-shaped URL jest odrzucany przed zapisem bez odbijania userinfo w błędzie. Zmiana protokołu, hosta lub portu usuwa każdą starą reprezentację poświadczeń; przy tym samym endpointcie pominięte wartości są zachowywane.
 
 Przykład dodania prywatnego repozytorium SSH z loginem i hasłem do konfiguracji globalnej:
 

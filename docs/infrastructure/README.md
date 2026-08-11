@@ -1,6 +1,6 @@
 ---
 title: llmpkg Infrastructure
-module: llmpkg-infrastructure
+module: repositories
 layers: [AdapterLayer, ApplicationLayer]
 status: current
 last_updated: 2026-08-11
@@ -9,11 +9,11 @@ related:
   - ../cli/README.md
 ---
 
-# llmpkg — Infrastructure
+# llmpkg — referencja Infrastructure
 
-Implementacje kontraktów domenowych. Moduł zna HTTP, Git, system plików i JSON. Domena ani logika aplikacji nie importują infrastruktury; konkretne adaptery są podłączane w CLI.
+Ten dokument jest przekrojową referencją modułu Repozytoria, a nie osobnym modułem biznesowym. Infrastructure implementuje kontrakty domenowe i zna HTTP, Git, system plików oraz JSON. Domena ani logika aplikacji nie importują infrastruktury; konkretne adaptery są podłączane w CLI.
 
-## Dokumenty w tym module
+## Dokumenty referencyjne
 
 | Plik | Temat | Warstwy | Status |
 |---|---|---|---|

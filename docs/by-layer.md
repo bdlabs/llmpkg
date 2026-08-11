@@ -1,11 +1,11 @@
 # Dokumentacja według warstw
 
-Lista obejmuje ten sam zestaw modułów co [INDEX.md](./INDEX.md). Moduł Repozytoria jest dokumentem domenowym prowadzącym przez cały przepływ, a huba Domain należy używać jako kanonicznej trasy do reguł i kontraktów BusinessLogic.
+Kolumna „Moduły” zawiera wyłącznie moduły biznesowe z [INDEX.md](./INDEX.md). Dokumenty warstwowe są referencjami pomocniczymi, a nie osobnymi modułami.
 
-| Warstwa | Moduły |
-|---|---|
-| BusinessLogic | [Domain](./domain/README.md) |
-| ApplicationLogic | [Repozytoria](./modules/repositories/README.md), [Application](./application/README.md) |
-| ApplicationLayer | [Repozytoria](./modules/repositories/README.md), [CLI](./cli/README.md) |
-| AdapterLayer | [Repozytoria](./modules/repositories/README.md), [Infrastructure](./infrastructure/README.md), [CLI](./cli/README.md) |
-| UserInterface | [Repozytoria](./modules/repositories/README.md), [CLI](./cli/README.md) |
+| Warstwa | Moduły | Referencje warstwowe |
+|---|---|---|
+| BusinessLogic | [Repozytoria](./modules/repositories/README.md) | [Kontrakty i model domeny](./domain/README.md) |
+| ApplicationLogic | [Repozytoria](./modules/repositories/README.md) | [Use case'y](./application/README.md) |
+| ApplicationLayer | [Repozytoria](./modules/repositories/README.md) | [CLI wiring](./cli/README.md) |
+| AdapterLayer | [Repozytoria](./modules/repositories/README.md) | [Infrastructure](./infrastructure/README.md), [CLI adaptery](./cli/README.md) |
+| UserInterface | [Repozytoria](./modules/repositories/README.md) | [CLI output](./cli/README.md) |

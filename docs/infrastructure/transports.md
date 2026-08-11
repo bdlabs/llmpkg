@@ -1,6 +1,6 @@
 ---
 title: llmpkg — Transports & Infrastructure
-module: llmpkg-infrastructure
+module: repositories
 layers: [AdapterLayer, ApplicationLayer]
 status: current
 last_updated: 2026-08-11
@@ -183,4 +183,4 @@ Przed zapisem wszystkie logiczne pola `password` są zastępowane przez prywatne
 
 Adapter tworzy katalogi z trybem `0700` i pliki z `0600` oraz ponawia `chmod` dla już istniejących ścieżek. Na POSIX każdy błąd `chmod` przerywa operację. Na Windows ignorowany jest wyłącznie sygnał braku obsługi tej operacji; odmowa dostępu pozostaje błędem. Bity trybu Node nie zastępują Windows ACL, więc ochrona dodatkowo zależy od prywatnego profilu użytkownika. Utrata lub zmiana klucza uniemożliwia odszyfrowanie; ciphertext ze zmienionym tagiem jest odrzucany.
 
-**Ważne:** Hierarchię pierwszeństwa konfiguracji (`CLI arg → projekt → użytkownik → default`) orkiestruje ApplicationLayer (`cli/main.js`), nie ConfigReader. ConfigReader wyłącznie odczytuje lub zapisuje wskazany zakres — nie decyduje o pierwszeństwie.
+**Ważne:** Scalanie konfiguracji projektowej, użytkownika i wartości domyślnych orkiestruje `application/config-resolver.js` w ApplicationLogic, nie `ConfigReader` ani `cli/main.js`. `ConfigReader` wyłącznie odczytuje lub zapisuje wskazany zakres, a ApplicationLayer przekazuje osobno wartości z flag Command DTO.

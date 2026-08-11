@@ -1,6 +1,6 @@
 ---
 title: llmpkg Domain Model
-module: llmpkg-domain
+module: repositories
 layers: [BusinessLogic]
 status: current
 last_updated: 2026-08-11
@@ -9,11 +9,11 @@ related:
   - ../modules/repositories/README.md
 ---
 
-# llmpkg — Model Domenowy
+# llmpkg — referencja BusinessLogic
 
-Moduł definiuje rdzeń protokołu llmpkg: typy danych, reguły walidacji i algorytmy, które obowiązują niezależnie od interfejsu, transportu i infrastruktury.
+Ten dokument jest przekrojową referencją BusinessLogic modułu Repozytoria, a nie osobnym modułem biznesowym. Opisuje typy danych, reguły walidacji, kontrakty i algorytmy niezależne od interfejsu, transportu i infrastruktury.
 
-## Dokumenty w tym module
+## Dokumenty referencyjne
 
 | Plik | Temat | Warstwy | Status |
 |---|---|---|---|
