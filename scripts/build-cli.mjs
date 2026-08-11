@@ -10,7 +10,7 @@ async function buildCli() {
 
     // 1. Bundle the CLI via esbuild
     await build({
-        entryPoints: [resolve(projectRoot, 'src', 'cli-agent', 'cli', 'main.js')],
+        entryPoints: [resolve(projectRoot, 'src', 'cli', 'main.js')],
         bundle: true,
         platform: 'node',
         format: 'esm',
