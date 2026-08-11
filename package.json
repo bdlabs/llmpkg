@@ -1,5 +1,5 @@
 {
-  "name": "blue-diamond/llmpkg",
+  "name": "@blue-diamond/llmpkg",
   "version": "1.0.0",
   "private": true,
   "type": "module",
