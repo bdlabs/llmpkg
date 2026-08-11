@@ -19,7 +19,7 @@ import { parseCliArgs } from './adapters/input/parse-args.js';
 import {
     formatSearchResult, formatPackageInfo, formatInstallResult,
     formatUninstallResult, formatInstalledList, formatError,
-    formatRepoAddResult, formatRepositoryList,
+    formatRepoAddResult, formatRepositoryList, formatRepoWarnings,
 } from './adapters/output/text-formatter.js';
 import { theme } from './adapters/output/theme.js';
 import {
@@ -162,6 +162,9 @@ export async function runCli(argv = process.argv.slice(2)) {
                         password: parsed.password,
                     }, deps);
                     process.stdout.write(fmt.repoAdd(result) + '\n');
+                    if (!useJson && result.warnings?.length) {
+                        process.stderr.write(formatRepoWarnings(result) + '\n');
+                    }
                 }
                 break;
             }

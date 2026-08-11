@@ -1,7 +1,7 @@
 import { after, before, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -9,6 +9,7 @@ import {
     createGitRepositoryIndex,
     createGitManifestFetcher,
     createGitArtifactDownloader,
+    createSshLauncher,
     prepareGitClone,
     safeRealPath,
 } from '../../../src/infrastructure/transport/git-transport.js';
@@ -70,6 +71,23 @@ describe('generic Git transport', () => {
         assert.equal(clone.url, 'example.test:repos/skills');
         assert.equal(clone.sshUsername, 'git');
         assert.equal(clone.password, 'secret');
+    });
+
+    test('accepts representative HTTP usernames', () => {
+        for (const username of ['developer@example.test', 'gitlab+deploy-token', 'DOMAIN\\user']) {
+            const clone = prepareGitClone({ url: 'https://example.test/repo.git', username, password: 'secret' });
+            assert.equal(clone.username, username);
+        }
+    });
+
+    test('keeps SSH usernames out of shell-parsed launcher text', async () => {
+        const malicious = 'user;echo INJECTED';
+        const clone = prepareGitClone({ url: 'ssh://example.test/repo.git', username: malicious });
+        assert.equal(clone.sshUsername, malicious);
+        const launcher = await createSshLauncher(root);
+        const contents = await readFile(launcher, 'utf8');
+        assert.equal(contents.includes(malicious), false);
+        assert.equal(contents.includes('LLMPKG_GIT_SSH_USERNAME'), false);
     });
 
     test('selects credentials belonging to the requested repository URL', () => {

@@ -26,6 +26,7 @@ function safeRepository(repo) {
         ...(repo.priority !== undefined ? { priority: repo.priority } : {}),
         ...(repo.authenticated || repo.username || repo.password ? { authenticated: true } : {}),
         ...(repo.global !== undefined ? { global: repo.global } : {}),
+        ...(Array.isArray(repo.warnings) && repo.warnings.length > 0 ? { warnings: repo.warnings } : {}),
     };
 }
 

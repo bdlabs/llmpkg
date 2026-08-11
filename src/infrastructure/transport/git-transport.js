@@ -13,6 +13,7 @@ import { LlmpkgError, ERROR_CODES } from '../../domain/errors.js';
 
 const execFileAsync = promisify(execFile);
 const helperModulePath = fileURLToPath(new URL('./git-askpass.js', import.meta.url));
+const sshHelperModulePath = fileURLToPath(new URL('./git-ssh.js', import.meta.url));
 
 function safePath(root, ...segments) {
     const result = resolve(root, ...segments);
@@ -31,13 +32,6 @@ export async function safeRealPath(root, ...segments) {
         throw new LlmpkgError(ERROR_CODES.PATH_TRAVERSAL, 'Repository symlink escapes the checkout.');
     }
     return realTarget;
-}
-
-function validateUsername(username) {
-    if (username && !/^[A-Za-z0-9._-]+$/.test(username)) {
-        throw new LlmpkgError(ERROR_CODES.AUTHENTICATION_REQUIRED, 'The Git username contains unsupported characters.');
-    }
-    return username;
 }
 
 export function prepareGitClone(repoConfig) {
@@ -70,7 +64,6 @@ export function prepareGitClone(repoConfig) {
         }
         if (parsed.protocol === 'ssh:') sshUsername = username;
     }
-    validateUsername(username);
     return { url, username, password, sshUsername };
 }
 
@@ -95,11 +88,24 @@ async function createAskPassLauncher(directory) {
     return launcher;
 }
 
+export async function createSshLauncher(directory) {
+    if (process.platform === 'win32') {
+        const launcher = join(directory, 'llmpkg-ssh.cmd');
+        await writeFile(launcher, `@\"${process.execPath}\" \"${sshHelperModulePath}\" %*\r\n`, { mode: 0o700 });
+        return launcher;
+    }
+    const launcher = join(directory, 'llmpkg-ssh.sh');
+    await writeFile(launcher, `#!/bin/sh\nexec \"${process.execPath}\" \"${sshHelperModulePath}\" \"$@\"\n`, { mode: 0o700 });
+    await chmod(launcher, 0o700);
+    return launcher;
+}
+
 async function withCheckout(repoConfig, action) {
     const directory = await mkdtemp(join(tmpdir(), 'llmpkg-git-'));
     try {
         const askPass = await createAskPassLauncher(directory);
         const clone = prepareGitClone(repoConfig);
+        const sshLauncher = clone.sshUsername ? await createSshLauncher(directory) : undefined;
         const env = {
             ...process.env,
             GIT_TERMINAL_PROMPT: '0',
@@ -108,7 +114,11 @@ async function withCheckout(repoConfig, action) {
             SSH_ASKPASS_REQUIRE: 'force',
             LLMPKG_GIT_USERNAME: clone.username,
             LLMPKG_GIT_PASSWORD: clone.password,
-            ...(clone.sshUsername ? { GIT_SSH_COMMAND: `ssh -l ${clone.sshUsername}` } : {}),
+            ...(sshLauncher ? {
+                GIT_SSH: sshLauncher,
+                GIT_SSH_VARIANT: 'ssh',
+                LLMPKG_GIT_SSH_USERNAME: clone.sshUsername,
+            } : {}),
         };
         const checkout = join(directory, 'checkout');
         try {

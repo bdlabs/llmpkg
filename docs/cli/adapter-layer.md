@@ -69,7 +69,9 @@ Formatuje wyniki use case'ów jako czytelny tekst dla człowieka z wykorzystanie
 
 `formatError()` ukrywa stack trace i surowe błędy infrastruktury. Użytkownik widzi tylko `code` i `message` — oba bezpieczne do wyświetlenia.
 
-Formatery repozytoriów budują bezpieczne DTO: pomijają `username` i `password`, publikują co najwyżej `authenticated`, a poświadczenia osadzone w URL redagują.
+Formatery repozytoriów budują bezpieczne DTO: pomijają `username`, `password` i zaszyfrowany ciphertext, publikują co najwyżej `authenticated`, a userinfo w starszych URL-ach redagują wyłącznie na potrzeby prezentacji. Canonicalny URL zapisany przez `repo add` jest już oczyszczony.
+
+Dla `repo add` bez `--global`, jeżeli finalny wpis zawiera poświadczenia, formatter tekstowy tworzy angielskie ostrzeżenie, które `main.js` zapisuje na stderr po wyniku sukcesu na stdout. Formatter JSON umieszcza te same bezpieczne komunikaty w `warnings[]` pojedynczego dokumentu JSON i nie dopisuje osobnego tekstu na stderr. Ostrzeżenia nie zawierają loginu, hasła ani ciphertextu.
 
 ---
 
@@ -77,7 +79,7 @@ Formatery repozytoriów budują bezpieczne DTO: pomijają `username` i `password
 
 Identyczny zestaw funkcji, ale zwraca `JSON.stringify(result)`.
 
-**Kluczowe:** Use case'y nie wiedzą czy output będzie JSON czy tekst. Wybór formattera należy do `main.js` (ApplicationLayer).
+**Kluczowe:** Use case'y nie wiedzą czy output będzie JSON czy tekst. Wybór formattera należy do `main.js` (ApplicationLayer). Repozytoryjne `warnings[]` pozostaje bezpiecznym elementem wyniku: adapter JSON zachowuje tablicę, a adapter tekstowy formatuje ją do osobnego kanału stderr.
 
 ---
 

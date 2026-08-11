@@ -47,6 +47,10 @@ async function buildCli() {
         resolve(projectRoot, 'src', 'infrastructure', 'transport', 'git-askpass.js'),
         resolve(outDir, 'git-askpass.js'),
     );
+    await copyFile(
+        resolve(projectRoot, 'src', 'infrastructure', 'transport', 'git-ssh.js'),
+        resolve(outDir, 'git-ssh.js'),
+    );
 
     console.log(`CLI build complete: ${outDir}`);
 }

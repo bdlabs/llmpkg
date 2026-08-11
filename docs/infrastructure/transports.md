@@ -118,15 +118,15 @@ Adapter korzysta z klienta `git` i obsługuje `ssh://`, `git://`, składnię `us
 
 Każda operacja wykonuje płytki checkout do unikalnego katalogu tymczasowego, odczytuje `registry.json`, manifest lub artefakt, a następnie usuwa checkout. Przed odczytem sprawdzana jest zarówno ścieżka leksykalna, jak i wynik `realpath`, więc symlink nie może wyjść poza checkout.
 
-Opcjonalne `username` i `password` są wydobywane z konfiguracji lub userinfo URL. Userinfo jest usuwane przed zbudowaniem argumentów `git clone`, a wartości trafiają do ograniczonego środowiska `GIT_ASKPASS`/`SSH_ASKPASS`. Login SSH jest przekazywany przez `GIT_SSH_COMMAND`. Błędy techniczne są mapowane na `AUTHENTICATION_REQUIRED` lub `REPOSITORY_UNAVAILABLE`.
+Opcjonalne `username` i `password` są wydobywane z konfiguracji lub userinfo URL. Userinfo jest usuwane przed zbudowaniem argumentów `git clone`, a wartości trafiają do ograniczonego środowiska `GIT_ASKPASS`/`SSH_ASKPASS`. Loginy HTTP nie są ograniczone do alfanumerycznych i obsługują m.in. e-mail, plus i backslash. Dla SSH zmienna `GIT_SSH` wskazuje wrapper, który uruchamia helper Node; helper przekazuje login jako oddzielny argument procesu `ssh`, bez interpolacji w poleceniu powłoki. Błędy techniczne są mapowane na `AUTHENTICATION_REQUIRED` lub `REPOSITORY_UNAVAILABLE`.
 
-Helper `git-askpass.js` jest kopiowany do `dist/cli` podczas `npm run build`, dlatego mechanizm działa zarówno ze źródeł, jak i z pakietu CLI.
+Helpery `git-askpass.js` i `git-ssh.js` są kopiowane do `dist/cli` podczas `npm run build`, dlatego mechanizm działa zarówno ze źródeł, jak i z pakietu CLI.
 
 Wymagania i ograniczenia:
 
 - klient `git` musi być dostępny w `PATH`;
 - host SSH musi być osiągalny i mieć zaakceptowany host key;
-- hasło w konfiguracji jest tekstem jawnym, więc plik musi być chroniony; w automatyzacji preferowane są klucze SSH;
+- hasło istnieje jawnie tylko w pamięci procesu po odszyfrowaniu; w automatyzacji nadal preferowane są klucze SSH;
 - pobierana jest domyślna gałąź wskazana przez serwer;
 - przy zmianie hosta istniejącego wpisu stare poświadczenia są usuwane, o ile użytkownik nie poda nowych.
 
@@ -169,14 +169,18 @@ Implementuje pełny kontrakt `ConfigReader`: czyta i zapisuje konfigurację w pl
 | `~/.config/llmpkg/config.json` | Globalna konfiguracja użytkownika (repozytoria, defaultTarget) |
 | `./.llmpkg/llmpkg.json` | Konfiguracja projektu (repozytoria i ustawienia instalacji) |
 
-**Format `config.json`:**
+**Logiczny format po odczycie:**
 ```json
 {
   "repositories": [
-    { "name": "community", "url": "https://packages.example.org", "priority": 10, "username": "optional", "password": "optional" }
+    { "name": "community", "url": "https://packages.example.org", "priority": 10, "username": "optional", "password": "decrypted-in-memory-only" }
   ],
   "defaultTarget": "./skills"
 }
 ```
+
+Przed zapisem wszystkie pola `password` są zastępowane przez `passwordEncrypted` w wersjonowanym formacie AES-256-GCM (losowy nonce i tag uwierzytelniający). Klucz powstaje w `~/.config/llmpkg/credentials.key`, zawsze poza konfiguracją projektu. Starszy jawny `password` jest obsługiwany przy odczycie i migrowany przy następnym zapisie. Oczyszczony `url` nie zawiera userinfo.
+
+Adapter tworzy katalogi z trybem `0700` i pliki z `0600` oraz ponawia `chmod` dla już istniejących ścieżek. Jest to egzekwowalne na POSIX. Na Windows bity trybu Node nie zastępują ACL, więc ochrona dodatkowo zależy od prywatnego profilu użytkownika. Utrata lub zmiana klucza uniemożliwia odszyfrowanie; ciphertext ze zmienionym tagiem jest odrzucany.
 
 **Ważne:** Hierarchię pierwszeństwa konfiguracji (`CLI arg → projekt → użytkownik → default`) orkiestruje ApplicationLayer (`cli/main.js`), nie ConfigReader. ConfigReader wyłącznie odczytuje lub zapisuje wskazany zakres — nie decyduje o pierwszeństwie.

@@ -11,4 +11,5 @@ const projectRoot = resolve(import.meta.dirname, '..', '..', '..');
 test('CLI build includes the Git askpass helper', async () => {
     await exec(process.execPath, [resolve(projectRoot, 'scripts', 'build-cli.mjs')], { cwd: projectRoot });
     await assert.doesNotReject(() => access(resolve(projectRoot, 'dist', 'cli', 'git-askpass.js')));
+    await assert.doesNotReject(() => access(resolve(projectRoot, 'dist', 'cli', 'git-ssh.js')));
 });

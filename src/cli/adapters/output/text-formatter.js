@@ -126,6 +126,11 @@ export function formatRepositoryList(repos) {
     return repos.map((r) => `${theme.value(r.name)}  ${theme.muted(sanitizeUrl(r.url))}${r.username || r.password ? theme.muted('  [authenticated]') : ''}`).join('\n');
 }
 
+/** Format safe repository warnings for stderr. */
+export function formatRepoWarnings(result) {
+    return (result.warnings ?? []).map((warning) => theme.warning(`Warning: ${warning}`)).join('\n');
+}
+
 /**
  * Format an error for human display.
  * Hides stack traces and raw technical details — TechnicalLeakage prevention.

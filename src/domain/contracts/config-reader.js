@@ -4,7 +4,7 @@
  * Defined in domain, implemented in infrastructure.
  *
  * @typedef {{
- *   repositories: Array<{ name: string, url: string, priority: number, username?: string, password?: string }>,
+ *   repositories: Array<{ name: string, url: string, priority: number, username?: string, password?: string, passwordEncrypted?: string }>,
  *   defaultTarget?: string,
  * }} LlmpkgConfig
  *

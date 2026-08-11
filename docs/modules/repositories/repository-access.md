@@ -18,7 +18,7 @@ Moduł zapisuje nazwane konfiguracje repozytoriów, wybiera adapter transportu i
 
 ## Publiczne wejścia i konfiguracja
 
-`llmpkg repo add <name> <url> [--username <login>] [--password <password>] [--global]` zapisuje `{ name, url, priority, username?, password? }` w `.llmpkg/llmpkg.json` lub globalnym `~/.config/llmpkg/config.json`. Zmiana protokołu, hosta lub portu usuwa stare poświadczenia; przy tym samym endpointcie pominięte wartości są zachowywane.
+`llmpkg repo add <name> <url> [--username <login>] [--password <password>] [--global]` zapisuje nazwę, oczyszczony URL, priorytet oraz opcjonalny login i zaszyfrowane hasło w `.llmpkg/llmpkg.json` lub globalnym `~/.config/llmpkg/config.json`. Userinfo osadzone w URL jest wydobywane przed zapisem i zachowuje się jak dane z flag; jawne `--username` i `--password` mają pierwszeństwo. Zmiana protokołu, hosta lub portu usuwa stare poświadczenia; przy tym samym endpointcie pominięte wartości są zachowywane.
 
 Przykład dodania prywatnego repozytorium SSH z loginem i hasłem do konfiguracji globalnej:
 
@@ -37,7 +37,9 @@ llmpkg repo add private "ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.g
 
 Bez `--global` wpis trafia do lokalnego pliku `.llmpkg/llmpkg.json` bieżącego projektu. Z flagą `--global` jest zapisywany w globalnym pliku `~/.config/llmpkg/config.json`.
 
-`repo list` i wynik `repo add` nie pokazują sekretów. Hasło jest przechowywane jawnie w chronionym pliku konfiguracyjnym, dlatego w automatyzacji preferowane są klucze SSH.
+`repo list` i wynik `repo add` nie pokazują sekretów. Redakcja `***` dotyczy wyłącznie prezentacji starszych lub przekazanych w pamięci URL-i; zapisany URL nigdy nie zawiera userinfo. Login pozostaje w konfiguracji, natomiast hasło jest zapisywane w wersjonowanym formacie AES-256-GCM. Klucz 256-bitowy znajduje się poza projektem w `~/.config/llmpkg/credentials.key`.
+
+Zapis poświadczeń w konfiguracji projektu emituje nieinteraktywne angielskie ostrzeżenie. W trybie tekstowym trafia ono na stderr, a w `--json` do bezpiecznej tablicy `warnings`, dzięki czemu stdout pozostaje poprawnym JSON-em. Konfiguracja globalna nie emituje tego ostrzeżenia.
 
 ## Przepływ danych
 
@@ -49,9 +51,15 @@ Bez `--global` wpis trafia do lokalnego pliku `.llmpkg/llmpkg.json` bieżącego 
 
 ## Generic Git i bezpieczeństwo
 
-Transport rozpoznaje `ssh://`, `git://`, SCP-like oraz `.git`. Userinfo jest usuwane z URL przed utworzeniem argumentów `git clone`; niepoprawne kodowanie jest odrzucane. Login i hasło trafiają do środowiska askpass, a login SSH do kontrolowanego `GIT_SSH_COMMAND`. Checkout jest płytki i tymczasowy, a `realpath` blokuje symlinki wychodzące poza jego katalog.
+Transport rozpoznaje `ssh://`, `git://`, SCP-like oraz `.git`. Userinfo jest usuwane z URL przed utworzeniem argumentów `git clone`; niepoprawne kodowanie jest odrzucane. Loginy HTTP mogą zawierać m.in. adres e-mail, `gitlab+deploy-token` i `DOMAIN\\user`. Login i hasło trafiają do środowiska askpass. Login SSH jest odczytywany przez pomocniczy proces Node i przekazywany do `ssh` jako osobny argument `-l`, nigdy przez `GIT_SSH_COMMAND` ani interpolowany tekst powłoki. Checkout jest płytki i tymczasowy, a `realpath` blokuje symlinki wychodzące poza jego katalog.
 
-Build CLI zawiera `index.js`, `package.json` i `git-askpass.js`. Wymaga klienta `git` w `PATH`; SSH wymaga osiągalnego hosta i poprawnej obsługi host key.
+Build CLI zawiera `index.js`, `package.json`, `git-askpass.js` i `git-ssh.js`. Wymaga klienta `git` w `PATH`; SSH wymaga osiągalnego hosta i poprawnej obsługi host key.
+
+## Persystencja, uprawnienia i ograniczenia
+
+Adapter konfiguracji odszyfrowuje hasła wyłącznie w pamięci. Starsze wpisy z jawnym polem `password` są nadal odczytywane i zostają zaszyfrowane przy następnym zapisie konfiguracji. AES-GCM uwierzytelnia ciphertext; uszkodzenie danych albo użycie innego klucza powoduje odrzucenie odczytu zamiast zwrócenia zmienionego hasła.
+
+Na systemach POSIX katalogi konfiguracji otrzymują tryb `0700`, a pliki klucza i konfiguracji `0600`. Na Windows Node.js nie udostępnia w tym mechanizmie pełnego zarządzania ACL: aplikacja ustawia najlepsze przenośne odpowiedniki, ale faktyczna izolacja zależy od ACL profilu użytkownika. Plik projektu zaszyfrowany kluczem jednego użytkownika nie jest odszyfrowywalny przez innego użytkownika ani po utracie `credentials.key`; klucz nie powinien być umieszczany w projekcie ani systemie kontroli wersji.
 
 ## Błędy
 
