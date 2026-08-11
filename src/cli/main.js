@@ -73,12 +73,14 @@ function getHelpText() {
  * This is the ONLY place concrete implementations are instantiated.
  * @param {{ config: import('../domain/contracts/config-reader.js').LlmpkgConfig, dryRun?: boolean }} opts
  */
-function buildDeps({ config, dryRun = false }) {
-    const repoConfig = config.repositories[0] ?? { name: 'default', url: '' };
+function buildDeps({ config, dryRun = false, repository }) {
+    const repoConfig = config.repositories.find((repo) => repo.name === repository)
+        ?? config.repositories[0]
+        ?? { name: 'default', url: '' };
     return {
         repositoryIndex: createRepositoryIndex(repoConfig),
-        manifestFetcher: createManifestFetcher(repoConfig),
-        artifactDownloader: createArtifactDownloader(repoConfig),
+        manifestFetcher: createManifestFetcher(config.repositories),
+        artifactDownloader: createArtifactDownloader(config.repositories),
         packageStore: createJsonPackageStore(join(process.cwd(), '.llmpkg', 'installed.json')),
         fileSystem: dryRun ? createNoOpFileSystem() : createNodeFileSystem(),
         configReader: createYamlConfigReader(),
@@ -104,7 +106,7 @@ export async function runCli(argv = process.argv.slice(2)) {
         const configReader = createYamlConfigReader();
         const config = await resolveConfig(configReader);
 
-        const deps = buildDeps({ config, dryRun: parsed.dryRun });
+        const deps = buildDeps({ config, dryRun: parsed.dryRun, repository: parsed.repository });
 
         const fmt = useJson
             ? { search: formatSearchResultJson, info: formatPackageInfoJson, install: formatInstallResultJson, uninstall: formatUninstallResultJson, list: formatInstalledListJson, repoAdd: formatRepoAddResultJson, repoList: formatRepositoryListJson }

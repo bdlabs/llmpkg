@@ -5,8 +5,8 @@ layers: [ApplicationLayer, AdapterLayer, UserInterface]
 status: current
 last_updated: 2026-08-11
 related:
-  - ../llmpkg-application/README.md
-  - ../llmpkg-infrastructure/README.md
+  - ../application/README.md
+  - ../infrastructure/README.md
 ---
 
 # llmpkg — CLI Layer
@@ -21,8 +21,8 @@ Warstwa CLI łączy trzy podwarstwy: ApplicationLayer (routing, DI), AdapterLaye
 
 ## Powiązania
 
-- Use case'y: [llmpkg-application](../llmpkg-application/use-cases.md)
-- Implementacje kontraktów: [llmpkg-infrastructure](../llmpkg-infrastructure/transports.md)
+- Use case'y: [Application](../application/use-cases.md)
+- Implementacje kontraktów: [Infrastructure](../infrastructure/transports.md)
 
 ## Budowanie i użycie
 
@@ -30,7 +30,7 @@ Projekt może być zbudowany do w pełni samodzielnego pakietu CLI w katalogu `d
 
 1. **Zbuduj pakiet CLI**:
    ```bash
-   npm run build:cli
+   npm run build
    ```
    Skrypt ten z-bundle'uje cały moduł do jednego pliku `dist/cli/index.js` wraz ze zdefiniowanym `package.json`.
 

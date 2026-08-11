@@ -1,5 +1,5 @@
 import { build } from 'esbuild';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 
 const projectRoot = resolve(import.meta.dirname, '..');
@@ -41,6 +41,11 @@ async function buildCli() {
         resolve(outDir, 'package.json'),
         JSON.stringify(pkgJson, null, 2),
         'utf-8'
+    );
+
+    await copyFile(
+        resolve(projectRoot, 'src', 'infrastructure', 'transport', 'git-askpass.js'),
+        resolve(outDir, 'git-askpass.js'),
     );
 
     console.log(`CLI build complete: ${outDir}`);

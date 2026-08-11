@@ -16,7 +16,8 @@ export function getTransportType(url) {
     if (url.startsWith('github:') || url.startsWith('https://github.com/')) {
         return 'github';
     }
-    if (url.startsWith('ssh://') || url.startsWith('git://') || /^[^/@\s]+@[^/:\s]+:.+/.test(url) || /\.git\/?$/.test(url)) {
+    const scpLike = !url.includes('://') && /^(?:[^/@\s:]+@)?[^/:\s]+:.+/.test(url);
+    if (url.startsWith('ssh://') || url.startsWith('git://') || scpLike || /\.git\/?$/.test(url)) {
         return 'git';
     }
     return 'http';
@@ -30,37 +31,44 @@ export function createRepositoryIndex(repoConfig) {
     return createHttpRepositoryIndex(repoConfig);
 }
 
-export function createManifestFetcher(repoConfig) {
+function repositoryConfigs(config) {
+    if (Array.isArray(config)) return config;
+    return config ? [config] : [];
+}
+
+export function findRepository(config, repoUrl) {
+    return repositoryConfigs(config).find((repo) => repo.url === repoUrl) ?? { url: repoUrl, name: 'unknown' };
+}
+
+export function createManifestFetcher(config) {
     // Return a facade that selects the right transport based on repoUrl inside the method
     const http = createHttpManifestFetcher();
     const local = createLocalFsManifestFetcher();
     const github = createGitHubManifestFetcher();
-    const git = repoConfig ? createGitManifestFetcher(repoConfig) : null;
 
     return {
         async fetchManifest(packageName, version, repoUrl) {
             const type = getTransportType(repoUrl);
             if (type === 'local') return local.fetchManifest(packageName, version, repoUrl);
             if (type === 'github') return github.fetchManifest(packageName, version, repoUrl);
-            if (type === 'git' && git) return git.fetchManifest(packageName, version, repoUrl);
+            if (type === 'git') return createGitManifestFetcher(findRepository(config, repoUrl)).fetchManifest(packageName, version, repoUrl);
             return http.fetchManifest(packageName, version, repoUrl);
         }
     };
 }
 
-export function createArtifactDownloader(repoConfig) {
+export function createArtifactDownloader(config) {
     // Facade selecting the right transport based on repoUrl
     const http = createHttpArtifactDownloader();
     const local = createLocalFsArtifactDownloader();
     const github = createGitHubArtifactDownloader();
-    const git = repoConfig ? createGitArtifactDownloader(repoConfig) : null;
 
     return {
         async downloadArtifact(artifact, repoUrl) {
             const type = getTransportType(repoUrl);
             if (type === 'local') return local.downloadArtifact(artifact, repoUrl);
             if (type === 'github') return github.downloadArtifact(artifact, repoUrl);
-            if (type === 'git' && git) return git.downloadArtifact(artifact, repoUrl);
+            if (type === 'git') return createGitArtifactDownloader(findRepository(config, repoUrl)).downloadArtifact(artifact, repoUrl);
             return http.downloadArtifact(artifact, repoUrl);
         }
     };

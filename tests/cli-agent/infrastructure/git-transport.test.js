@@ -1,7 +1,7 @@
 import { after, before, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -9,8 +9,11 @@ import {
     createGitRepositoryIndex,
     createGitManifestFetcher,
     createGitArtifactDownloader,
+    prepareGitClone,
+    safeRealPath,
 } from '../../../src/infrastructure/transport/git-transport.js';
-import { getTransportType } from '../../../src/infrastructure/transport/transport-factory.js';
+import { findRepository, getTransportType } from '../../../src/infrastructure/transport/transport-factory.js';
+import { ERROR_CODES } from '../../../src/domain/errors.js';
 
 const exec = promisify(execFile);
 
@@ -41,9 +44,39 @@ describe('generic Git transport', () => {
     test('detects generic Git URLs and preserves specialized transports', () => {
         assert.equal(getTransportType('ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.git'), 'git');
         assert.equal(getTransportType('git@example.test:repos/skills.git'), 'git');
+        assert.equal(getTransportType('example.test:repos/skills'), 'git');
         assert.equal(getTransportType('https://gitlab.example.test/team/skills.git'), 'git');
         assert.equal(getTransportType('github:owner/repo'), 'github');
         assert.equal(getTransportType('https://registry.example.test'), 'http');
+    });
+
+    test('removes URL credentials before constructing Git arguments', () => {
+        const clone = prepareGitClone({ url: 'https://alice:secret@example.test/repo.git' });
+        assert.equal(clone.url, 'https://example.test/repo.git');
+        assert.equal(clone.username, 'alice');
+        assert.equal(clone.password, 'secret');
+        assert.equal(clone.url.includes('secret'), false);
+    });
+
+    test('selects credentials belonging to the requested repository URL', () => {
+        const repositories = [
+            { name: 'public', url: 'https://example.test/public' },
+            { name: 'private', url: 'ssh://git@example.test/private.git', username: 'git', password: 'private-secret' },
+        ];
+        assert.equal(findRepository(repositories, repositories[1].url).password, 'private-secret');
+    });
+
+    test('rejects a symlink that resolves outside the checkout', async () => {
+        const checkout = join(root, 'safe-checkout');
+        const outside = join(root, 'outside');
+        await mkdir(checkout);
+        await mkdir(outside);
+        await writeFile(join(outside, 'secret.txt'), 'secret');
+        await symlink(outside, join(checkout, 'escape'), process.platform === 'win32' ? 'junction' : 'dir');
+        await assert.rejects(
+            () => safeRealPath(checkout, 'escape', 'secret.txt'),
+            (error) => error.code === ERROR_CODES.PATH_TRAVERSAL,
+        );
     });
 
     test('reads index, manifest and artifact from a Git checkout', async () => {

@@ -5,8 +5,7 @@ layers: [BusinessLogic]
 status: current
 last_updated: 2026-08-11
 related:
-  - ../../by-layer.md
-  - ../../../cli-agent/wytyczne.md
+  - ../by-layer.md
 ---
 
 # llmpkg — Domain Model

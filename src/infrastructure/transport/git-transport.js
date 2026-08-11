@@ -4,7 +4,7 @@
  */
 
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile, chmod } from 'node:fs/promises';
+import { mkdtemp, readFile, realpath, rm, writeFile, chmod } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,6 +21,48 @@ function safePath(root, ...segments) {
         throw new LlmpkgError(ERROR_CODES.PATH_TRAVERSAL, 'Repository path escapes the checkout.');
     }
     return result;
+}
+
+export async function safeRealPath(root, ...segments) {
+    const lexicalPath = safePath(root, ...segments);
+    const [realRoot, realTarget] = await Promise.all([realpath(root), realpath(lexicalPath)]);
+    const rel = relative(realRoot, realTarget);
+    if (rel.startsWith('..') || rel === '..') {
+        throw new LlmpkgError(ERROR_CODES.PATH_TRAVERSAL, 'Repository symlink escapes the checkout.');
+    }
+    return realTarget;
+}
+
+function validateUsername(username) {
+    if (username && !/^[A-Za-z0-9._-]+$/.test(username)) {
+        throw new LlmpkgError(ERROR_CODES.AUTHENTICATION_REQUIRED, 'The Git username contains unsupported characters.');
+    }
+    return username;
+}
+
+export function prepareGitClone(repoConfig) {
+    let url = repoConfig.url;
+    let username = repoConfig.username ?? '';
+    let password = repoConfig.password ?? '';
+    let sshUsername = '';
+    try {
+        const parsed = new URL(url);
+        username ||= decodeURIComponent(parsed.username);
+        password ||= decodeURIComponent(parsed.password);
+        if (parsed.protocol === 'ssh:') sshUsername = username;
+        parsed.username = '';
+        parsed.password = '';
+        url = parsed.toString();
+    } catch {
+        const scp = /^(?:([^/@\s:]+)@)?([^/:\s]+):(.+)$/.exec(url);
+        if (scp) {
+            username ||= scp[1] ?? '';
+            sshUsername = username;
+            url = `${scp[2]}:${scp[3]}`;
+        }
+    }
+    validateUsername(username);
+    return { url, username, password, sshUsername };
 }
 
 function mapGitError(error) {
@@ -48,18 +90,20 @@ async function withCheckout(repoConfig, action) {
     const directory = await mkdtemp(join(tmpdir(), 'llmpkg-git-'));
     try {
         const askPass = await createAskPassLauncher(directory);
+        const clone = prepareGitClone(repoConfig);
         const env = {
             ...process.env,
             GIT_TERMINAL_PROMPT: '0',
             GIT_ASKPASS: askPass,
             SSH_ASKPASS: askPass,
             SSH_ASKPASS_REQUIRE: 'force',
-            LLMPKG_GIT_USERNAME: repoConfig.username ?? '',
-            LLMPKG_GIT_PASSWORD: repoConfig.password ?? '',
+            LLMPKG_GIT_USERNAME: clone.username,
+            LLMPKG_GIT_PASSWORD: clone.password,
+            ...(clone.sshUsername ? { GIT_SSH_COMMAND: `ssh -l ${clone.sshUsername}` } : {}),
         };
         const checkout = join(directory, 'checkout');
         try {
-            await execFileAsync('git', ['clone', '--depth', '1', '--', repoConfig.url, checkout], {
+            await execFileAsync('git', ['clone', '--depth', '1', '--', clone.url, checkout], {
                 env,
                 windowsHide: true,
                 timeout: 120000,
@@ -76,7 +120,7 @@ async function withCheckout(repoConfig, action) {
 
 async function readJson(root, ...segments) {
     try {
-        return JSON.parse(await readFile(safePath(root, ...segments), 'utf8'));
+        return JSON.parse(await readFile(await safeRealPath(root, ...segments), 'utf8'));
     } catch (error) {
         if (error instanceof LlmpkgError) throw error;
         throw new LlmpkgError(ERROR_CODES.REPOSITORY_UNAVAILABLE, 'Required repository metadata is missing or invalid.');
@@ -122,7 +166,7 @@ export function createGitArtifactDownloader(repoConfig) {
         async downloadArtifact(artifact) {
             return withCheckout(repoConfig, async (checkout) => {
                 try {
-                    return await readFile(safePath(checkout, 'packages', artifact.path));
+                    return await readFile(await safeRealPath(checkout, 'packages', artifact.path));
                 } catch (error) {
                     if (error instanceof LlmpkgError) throw error;
                     throw new LlmpkgError(ERROR_CODES.REPOSITORY_UNAVAILABLE, 'The requested repository artifact is unavailable.');

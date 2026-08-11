@@ -1,12 +1,12 @@
 ---
 title: llmpkg Infrastructure
 module: llmpkg-infrastructure
-layers: [ApplicationLogic]
+layers: [ApplicationLogic, ApplicationLayer]
 status: current
 last_updated: 2026-08-11
 related:
-  - ../llmpkg-domain/README.md
-  - ../llmpkg-cli/README.md
+  - ../domain/README.md
+  - ../cli/README.md
 ---
 
 # llmpkg — Infrastructure
@@ -17,9 +17,9 @@ Implementacje kontraktów domenowych. Moduł zna HTTP, Git, system plików i JSO
 
 | Plik | Temat | Warstwy | Status |
 |---|---|---|---|
-| [transports.md](./transports.md) | HTTP, GitHub, generic Git i local-fs, PackageStore, Cache, Config | ApplicationLogic | current |
+| [transports.md](./transports.md) | HTTP, GitHub, generic Git i local-fs, PackageStore, Cache, Config | ApplicationLogic, ApplicationLayer | current |
 
 ## Powiązania
 
-- Interfejsy kontraktów: [llmpkg-domain](../llmpkg-domain/domain-model.md)
-- Wiring i DI: [llmpkg-cli](../llmpkg-cli/adapter-layer.md)
+- Interfejsy kontraktów: [Domain](../domain/domain-model.md)
+- Wiring i DI: [CLI](../cli/adapter-layer.md)

@@ -5,7 +5,7 @@ layers: [ApplicationLogic]
 status: current
 last_updated: 2026-08-11
 related:
-  - ../llmpkg-domain/domain-model.md
+  - ../domain/domain-model.md
 ---
 
 # llmpkg — Use Cases
@@ -117,7 +117,7 @@ Use case nie zmienia swojej logiki — DIP w praktyce.
 
 **Command:** `{ name, url, global?, username?, password? }`
 
-Tworzy lub aktualizuje wpis repozytorium przez `ConfigReader`. Pominięte dane logowania nie kasują istniejących poświadczeń. Wynik zawiera tylko `authenticated: boolean`; hasło nie wraca do prezentacji. Sposób użycia poświadczeń należy do adaptera infrastruktury.
+Tworzy lub aktualizuje wpis repozytorium przez `ConfigReader`. Przy tym samym endpointcie pominięte poświadczenia są zachowywane; zmiana protokołu, hosta lub portu usuwa stare poświadczenia, chyba że podano nowe. Wynik odzwierciedla finalny stan przez `authenticated: boolean`; hasło nie wraca do prezentacji.
 
 ---
 

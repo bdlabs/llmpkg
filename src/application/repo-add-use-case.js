@@ -6,6 +6,16 @@
 
 import { createDefaultConfig } from '../domain/contracts/config-reader.js';
 
+function endpoint(value) {
+    try {
+        const url = new URL(value);
+        return `${url.protocol}//${url.hostname}:${url.port}`;
+    } catch {
+        const scp = /^(?:[^/@\s:]+@)?([^/:\s]+):/.exec(value);
+        return scp ? `ssh://${scp[1]}` : value;
+    }
+}
+
 /**
  * Execute the repository add workflow.
  * @param {{ name: string, url: string, global?: boolean, username?: string, password?: string }} input
@@ -28,21 +38,27 @@ export async function execute({ name, url, global = false, username, password },
     }
 
     const index = config.repositories.findIndex((r) => r.name === name);
+    let savedRepository;
     if (index !== -1) {
-        config.repositories[index] = {
-            ...config.repositories[index],
+        const current = config.repositories[index];
+        const sameEndpoint = endpoint(current.url) === endpoint(url);
+        savedRepository = {
+            ...current,
             url,
+            ...(!sameEndpoint ? { username: undefined, password: undefined } : {}),
             ...(username !== undefined ? { username } : {}),
             ...(password !== undefined ? { password } : {}),
         };
+        config.repositories[index] = savedRepository;
     } else {
-        config.repositories.push({
+        savedRepository = {
             name,
             url,
             priority: config.repositories.length,
             ...(username !== undefined ? { username } : {}),
             ...(password !== undefined ? { password } : {}),
-        });
+        };
+        config.repositories.push(savedRepository);
     }
 
     if (global) {
@@ -51,5 +67,5 @@ export async function execute({ name, url, global = false, username, password },
         await configReader.writeProjectConfig(config);
     }
 
-    return { name, url, global, authenticated: Boolean(username || password) };
+    return { name, url, global, authenticated: Boolean(savedRepository.username || savedRepository.password) };
 }

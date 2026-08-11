@@ -5,8 +5,8 @@ layers: [ApplicationLogic]
 status: current
 last_updated: 2026-08-11
 related:
-  - ../llmpkg-domain/README.md
-  - ../llmpkg-infrastructure/README.md
+  - ../domain/README.md
+  - ../infrastructure/README.md
 ---
 
 # llmpkg — ApplicationLogic (Use Cases)
@@ -21,6 +21,6 @@ Moduł orkiestruje przepływ danych między domeną a infrastrukturą. Use case'
 
 ## Powiązania
 
-- Typy domenowe i kontrakty: [llmpkg-domain](../llmpkg-domain/README.md)
-- Implementacje kontraktów: [llmpkg-infrastructure](../llmpkg-infrastructure/README.md)
-- CLI routing: [llmpkg-cli](../llmpkg-cli/README.md)
+- Typy domenowe i kontrakty: [Domain](../domain/README.md)
+- Implementacje kontraktów: [Infrastructure](../infrastructure/README.md)
+- CLI routing: [CLI](../cli/README.md)

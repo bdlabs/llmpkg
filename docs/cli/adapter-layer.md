@@ -103,9 +103,9 @@ Identyczny zestaw funkcji, ale zwraca `JSON.stringify(result)`.
 ```js
 function buildDeps({ config, dryRun }) {
   return {
-    repositoryIndex: createHttpRepositoryIndex(config.repositories[0]),
-    manifestFetcher: createHttpManifestFetcher(),
-    artifactDownloader: createHttpArtifactDownloader(),
+    repositoryIndex: createRepositoryIndex(selectedRepository),
+    manifestFetcher: createManifestFetcher(config.repositories),
+    artifactDownloader: createArtifactDownloader(config.repositories),
     packageStore: createJsonPackageStore('.llmpkg/installed.json'),
     fileSystem: dryRun ? createNoOpFileSystem() : createNodeFileSystem(),
     configReader: createYamlConfigReader(),

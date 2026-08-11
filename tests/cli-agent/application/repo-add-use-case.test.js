@@ -42,4 +42,19 @@ describe('repository credentials', () => {
             assert.equal(output.includes('alice:secret'), false);
         }
     });
+
+    test('drops old credentials when the repository endpoint changes', async () => {
+        const configReader = reader({ repositories: [{ name: 'private', url: 'ssh://git@old.test/repo.git', username: 'git', password: 'old-secret' }] });
+        const result = await execute({ name: 'private', url: 'ssh://git@new.test/repo.git' }, { configReader });
+        assert.equal(configReader.written.repositories[0].username, undefined);
+        assert.equal(configReader.written.repositories[0].password, undefined);
+        assert.equal(result.authenticated, false);
+    });
+
+    test('keeps credentials when only the path changes on the same endpoint', async () => {
+        const configReader = reader({ repositories: [{ name: 'private', url: 'ssh://git@example.test/old.git', username: 'git', password: 'secret' }] });
+        const result = await execute({ name: 'private', url: 'ssh://git@example.test/new.git' }, { configReader });
+        assert.equal(configReader.written.repositories[0].password, 'secret');
+        assert.equal(result.authenticated, true);
+    });
 });

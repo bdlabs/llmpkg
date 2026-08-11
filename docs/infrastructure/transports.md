@@ -1,7 +1,7 @@
 ---
 title: llmpkg — Transports & Infrastructure
 module: llmpkg-infrastructure
-layers: [ApplicationLogic]
+layers: [ApplicationLogic, ApplicationLayer]
 status: current
 last_updated: 2026-08-11
 ---
@@ -116,16 +116,19 @@ Pozwala to na serwowanie i pobieranie paczek llmpkg z darmowego publicznego repo
 
 Adapter korzysta z klienta `git` i obsługuje `ssh://`, `git://`, składnię `user@host:path` oraz adresy kończące się `.git`, w tym `ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.git`.
 
-Każda operacja wykonuje płytki checkout do unikalnego katalogu tymczasowego, odczytuje `registry.json`, manifest lub artefakt, a następnie usuwa checkout. Ścieżki są sprawdzane przed odczytem, aby nie mogły wyjść poza katalog repozytorium.
+Każda operacja wykonuje płytki checkout do unikalnego katalogu tymczasowego, odczytuje `registry.json`, manifest lub artefakt, a następnie usuwa checkout. Przed odczytem sprawdzana jest zarówno ścieżka leksykalna, jak i wynik `realpath`, więc symlink nie może wyjść poza checkout.
 
-Opcjonalne `username` i `password` są przekazywane przez ograniczone środowisko `GIT_ASKPASS`/`SSH_ASKPASS`; nie trafiają do URL, argumentów Git ani błędów. Błędy techniczne są mapowane na `AUTHENTICATION_REQUIRED` lub `REPOSITORY_UNAVAILABLE`.
+Opcjonalne `username` i `password` są wydobywane z konfiguracji lub userinfo URL. Userinfo jest usuwane przed zbudowaniem argumentów `git clone`, a wartości trafiają do ograniczonego środowiska `GIT_ASKPASS`/`SSH_ASKPASS`. Login SSH jest przekazywany przez `GIT_SSH_COMMAND`. Błędy techniczne są mapowane na `AUTHENTICATION_REQUIRED` lub `REPOSITORY_UNAVAILABLE`.
+
+Helper `git-askpass.js` jest kopiowany do `dist/cli` podczas `npm run build`, dlatego mechanizm działa zarówno ze źródeł, jak i z pakietu CLI.
 
 Wymagania i ograniczenia:
 
 - klient `git` musi być dostępny w `PATH`;
 - host SSH musi być osiągalny i mieć zaakceptowany host key;
 - hasło w konfiguracji jest tekstem jawnym, więc plik musi być chroniony; w automatyzacji preferowane są klucze SSH;
-- pobierana jest domyślna gałąź wskazana przez serwer.
+- pobierana jest domyślna gałąź wskazana przez serwer;
+- przy zmianie hosta istniejącego wpisu stare poświadczenia są usuwane, o ile użytkownik nie poda nowych.
 
 ---
 
