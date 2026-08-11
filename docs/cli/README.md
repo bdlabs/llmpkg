@@ -26,7 +26,7 @@ Warstwa CLI łączy trzy podwarstwy: ApplicationLayer (routing, DI), AdapterLaye
 
 ## Budowanie i użycie
 
-Projekt może być zbudowany do w pełni samodzielnego pakietu CLI w katalogu `dist/cli` za pomocą bundlera `esbuild`.
+Projekt może być zbudowany do pakietu CLI w katalogu `dist/cli` za pomocą bundlera `esbuild`. Pakiet zawiera `index.js`, `package.json` i wymagany przez uwierzytelnianie Git plik `git-askpass.js`; klient `git` pozostaje zależnością systemową.
 
 1. **Zbuduj pakiet CLI**:
    ```bash
@@ -46,7 +46,7 @@ Projekt może być zbudowany do w pełni samodzielnego pakietu CLI w katalogu `d
    Po zainstalowaniu CLI (`npm link`), możesz zarządzać artefaktami z dowolnego katalogu w systemie:
 
    **Dodawanie nowego repozytorium**
-   Polecenie umożliwia dodanie repozytorium do lokalnego projektu (plik `llmpkg.json` w bieżącym katalogu roboczym) lub do globalnej konfiguracji.
+   Polecenie umożliwia dodanie repozytorium do lokalnego projektu (plik `.llmpkg/llmpkg.json` w bieżącym katalogu roboczym) lub do globalnej konfiguracji.
 
    Aby dodać repozytorium do konfiguracji globalnej (zostanie zapisane w `~/.config/llmpkg/config.json`), musisz użyć flagi `--global`:
    ```bash
@@ -56,7 +56,7 @@ Projekt może być zbudowany do w pełni samodzielnego pakietu CLI w katalogu `d
    llmpkg repo add private ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.git --username git --password '<password>' --global
    ```
 
-   Aby zapisać konfigurację lokalnie dla konkretnego projektu (np. by po wejściu w dany katalog odpytywać dodatkowe lokalne ścieżki wpisane w opartym w CWD `llmpkg.json`):
+   Aby zapisać konfigurację lokalnie dla konkretnego projektu (np. by po wejściu w dany katalog odpytywać wpisy z `.llmpkg/llmpkg.json`):
    ```bash
    llmpkg repo add local file:///d:/programowanie-wlsane/codex/my-repo
    ```

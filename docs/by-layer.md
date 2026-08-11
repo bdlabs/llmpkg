@@ -3,6 +3,7 @@
 | Warstwa | Moduły |
 |---|---|
 | BusinessLogic | [Domain](./domain/README.md) |
-| ApplicationLogic | [Application](./application/README.md), [Infrastructure — implementacje portów](./infrastructure/README.md) |
-| ApplicationLayer | [CLI](./cli/README.md), [Infrastructure — wiring adapterów](./infrastructure/README.md) |
-| AdapterLayer, UserInterface | [CLI](./cli/README.md) |
+| ApplicationLogic | [Repozytoria](./modules/repositories/README.md), [Application](./application/README.md) |
+| ApplicationLayer | [Repozytoria](./modules/repositories/README.md), [CLI](./cli/README.md) |
+| AdapterLayer | [Repozytoria](./modules/repositories/README.md), [Infrastructure](./infrastructure/README.md), [CLI](./cli/README.md) |
+| UserInterface | [Repozytoria](./modules/repositories/README.md), [CLI](./cli/README.md) |

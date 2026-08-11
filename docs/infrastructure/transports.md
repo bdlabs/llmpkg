@@ -1,7 +1,7 @@
 ---
 title: llmpkg — Transports & Infrastructure
 module: llmpkg-infrastructure
-layers: [ApplicationLogic, ApplicationLayer]
+layers: [AdapterLayer, ApplicationLayer]
 status: current
 last_updated: 2026-08-11
 ---
@@ -161,13 +161,13 @@ Cache jest opcjonalny w MVP — use case'y wywołują kontrakty bezpośrednio. C
 
 ## Config Reader (`infrastructure/config/yaml-config-reader.js`)
 
-Implementuje `ConfigReader`. Czyta konfigurację z plików JSON.
+Implementuje pełny kontrakt `ConfigReader`: czyta i zapisuje konfigurację w plikach JSON.
 
 **Pliki konfiguracji:**
 | Plik | Zawartość |
 |---|---|
 | `~/.config/llmpkg/config.json` | Globalna konfiguracja użytkownika (repozytoria, defaultTarget) |
-| `./llmpkg.json` | Konfiguracja projektu (zależności, places instalacji) |
+| `./.llmpkg/llmpkg.json` | Konfiguracja projektu (repozytoria i ustawienia instalacji) |
 
 **Format `config.json`:**
 ```json
@@ -179,4 +179,4 @@ Implementuje `ConfigReader`. Czyta konfigurację z plików JSON.
 }
 ```
 
-**Ważne:** Hierarchię pierwszeństwa konfiguracji (`CLI arg → projekt → użytkownik → default`) orkiestruje ApplicationLayer (`cli/main.js`), nie ConfigReader. ConfigReader tylko czyta — nie decyduje.
+**Ważne:** Hierarchię pierwszeństwa konfiguracji (`CLI arg → projekt → użytkownik → default`) orkiestruje ApplicationLayer (`cli/main.js`), nie ConfigReader. ConfigReader wyłącznie odczytuje lub zapisuje wskazany zakres — nie decyduje o pierwszeństwie.

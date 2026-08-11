@@ -1,7 +1,7 @@
 ---
 title: llmpkg Infrastructure
 module: llmpkg-infrastructure
-layers: [ApplicationLogic, ApplicationLayer]
+layers: [AdapterLayer, ApplicationLayer]
 status: current
 last_updated: 2026-08-11
 related:
@@ -17,7 +17,7 @@ Implementacje kontraktów domenowych. Moduł zna HTTP, Git, system plików i JSO
 
 | Plik | Temat | Warstwy | Status |
 |---|---|---|---|
-| [transports.md](./transports.md) | HTTP, GitHub, generic Git i local-fs, PackageStore, Cache, Config | ApplicationLogic, ApplicationLayer | current |
+| [transports.md](./transports.md) | HTTP, GitHub, generic Git i local-fs, PackageStore, Cache, Config | AdapterLayer, ApplicationLayer | current |
 
 ## Powiązania
 

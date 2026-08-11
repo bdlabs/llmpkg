@@ -58,6 +58,20 @@ describe('generic Git transport', () => {
         assert.equal(clone.url.includes('secret'), false);
     });
 
+    test('rejects malformed encoded userinfo before invoking Git', () => {
+        assert.throws(
+            () => prepareGitClone({ url: 'https://alice:sec%ZZret@example.test/repo.git' }),
+            (error) => error.code === ERROR_CODES.AUTHENTICATION_REQUIRED && !error.message.includes('sec%ZZret'),
+        );
+    });
+
+    test('uses configured SSH login for SCP-like URLs without userinfo', () => {
+        const clone = prepareGitClone({ url: 'example.test:repos/skills', username: 'git', password: 'secret' });
+        assert.equal(clone.url, 'example.test:repos/skills');
+        assert.equal(clone.sshUsername, 'git');
+        assert.equal(clone.password, 'secret');
+    });
+
     test('selects credentials belonging to the requested repository URL', () => {
         const repositories = [
             { name: 'public', url: 'https://example.test/public' },

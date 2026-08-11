@@ -114,7 +114,7 @@ Zdefiniowane w `domain/contracts/`. Implementowane w `infrastructure/`. Nigdy od
 | `ArtifactDownloader` | `artifact-downloader.js` | Pobieranie pliku artefaktu |
 | `PackageStore` | `package-store.js` | Persystencja stanu instalacji |
 | `FileSystemWriter` | `file-system.js` | Operacje na plikach (enables dry-run) |
-| `ConfigReader` | `config-reader.js` | Odczyt konfiguracji |
+| `ConfigReader` | `config-reader.js` | Odczyt i zapis konfiguracji globalnej oraz projektowej |
 
 *Uwaga: implementacje Null-object (`createNull*`) dla tych kontraktów używane w testach znajdują się w `infrastructure/tests/test-helpers.js`, poza warstwą domeny.*
 

@@ -122,7 +122,7 @@ function buildDeps({ config, dryRun }) {
 ```
 CLI arg (--target, --repo)
   ↓
-konfiguracja projektu (./llmpkg.json)
+konfiguracja projektu (./.llmpkg/llmpkg.json)
   ↓
 konfiguracja użytkownika (~/.config/llmpkg/config.json)
   ↓

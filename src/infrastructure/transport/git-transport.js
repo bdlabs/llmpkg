@@ -45,21 +45,30 @@ export function prepareGitClone(repoConfig) {
     let username = repoConfig.username ?? '';
     let password = repoConfig.password ?? '';
     let sshUsername = '';
-    try {
-        const parsed = new URL(url);
-        username ||= decodeURIComponent(parsed.username);
-        password ||= decodeURIComponent(parsed.password);
-        if (parsed.protocol === 'ssh:') sshUsername = username;
+    const scp = !url.includes('://') ? /^(?:([^/@\s:]+)@)?([^/:\s]+):(.+)$/.exec(url) : null;
+    if (scp) {
+        username ||= scp[1] ?? '';
+        sshUsername = username;
+        url = `${scp[2]}:${scp[3]}`;
+    } else {
+        let parsed;
+        try {
+            parsed = new URL(url);
+        } catch {
+            throw new LlmpkgError(ERROR_CODES.REPOSITORY_UNAVAILABLE, 'The Git repository URL is invalid.');
+        }
+        const encodedUsername = parsed.username;
+        const encodedPassword = parsed.password;
         parsed.username = '';
         parsed.password = '';
         url = parsed.toString();
-    } catch {
-        const scp = /^(?:([^/@\s:]+)@)?([^/:\s]+):(.+)$/.exec(url);
-        if (scp) {
-            username ||= scp[1] ?? '';
-            sshUsername = username;
-            url = `${scp[2]}:${scp[3]}`;
+        try {
+            username ||= decodeURIComponent(encodedUsername);
+            password ||= decodeURIComponent(encodedPassword);
+        } catch {
+            throw new LlmpkgError(ERROR_CODES.AUTHENTICATION_REQUIRED, 'The Git repository credentials are malformed.');
         }
+        if (parsed.protocol === 'ssh:') sshUsername = username;
     }
     validateUsername(username);
     return { url, username, password, sshUsername };
