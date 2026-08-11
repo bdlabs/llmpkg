@@ -20,6 +20,23 @@ Moduł zapisuje nazwane konfiguracje repozytoriów, wybiera adapter transportu i
 
 `llmpkg repo add <name> <url> [--username <login>] [--password <password>] [--global]` zapisuje `{ name, url, priority, username?, password? }` w `.llmpkg/llmpkg.json` lub globalnym `~/.config/llmpkg/config.json`. Zmiana protokołu, hosta lub portu usuwa stare poświadczenia; przy tym samym endpointcie pominięte wartości są zachowywane.
 
+Przykład dodania prywatnego repozytorium SSH z loginem i hasłem do konfiguracji globalnej:
+
+```bash
+llmpkg repo add private ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.git \
+  --username git \
+  --password "twoje-haslo" \
+  --global
+```
+
+W PowerShell polecenie można podać w jednej linii:
+
+```powershell
+llmpkg repo add private "ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.git" --username "git" --password "twoje-haslo" --global
+```
+
+Bez `--global` wpis trafia do lokalnego pliku `.llmpkg/llmpkg.json` bieżącego projektu. Z flagą `--global` jest zapisywany w globalnym pliku `~/.config/llmpkg/config.json`.
+
 `repo list` i wynik `repo add` nie pokazują sekretów. Hasło jest przechowywane jawnie w chronionym pliku konfiguracyjnym, dlatego w automatyzacji preferowane są klucze SSH.
 
 ## Przepływ danych

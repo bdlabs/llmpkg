@@ -53,7 +53,19 @@ Projekt może być zbudowany do pakietu CLI w katalogu `dist/cli` za pomocą bun
    llmpkg repo add community https://packages.example.org --global
    llmpkg repo add local file:///d:/programowanie-wlsane/codex/my-repo --global
    llmpkg repo add ai-tools github:user/repo_name --global
-   llmpkg repo add private ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.git --username git --password '<password>' --global
+   ```
+
+   Login i hasło do prywatnego repozytorium podaj przez `--username` i `--password`:
+   ```bash
+   llmpkg repo add private ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.git \
+     --username git \
+     --password "twoje-haslo" \
+     --global
+   ```
+
+   W PowerShell użyj jednej linii:
+   ```powershell
+   llmpkg repo add private "ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.git" --username "git" --password "twoje-haslo" --global
    ```
 
    Aby zapisać konfigurację lokalnie dla konkretnego projektu (np. by po wejściu w dany katalog odpytywać wpisy z `.llmpkg/llmpkg.json`):
@@ -67,7 +79,7 @@ Projekt może być zbudowany do pakietu CLI w katalogu `dist/cli` za pomocą bun
    - **GitHub**: `github:wlasciciel/repozytorium` (pobiera z gałęzi `main` przez raw.githubusercontent.com)
    - **Dowolny Git**: `ssh://`, `git://`, składnia `user@host:path` albo adres kończący się `.git`
 
-   `--username` i `--password` zapisują opcjonalne poświadczenia. Wyniki tekstowe i JSON nie wypisują sekretów i redagują dane osadzone w URL. Hasło pozostaje jednak jawne w pliku konfiguracji; należy chronić jego uprawnienia, a w automatyzacji preferować klucze SSH.
+   `--username` i `--password` zapisują opcjonalne poświadczenia. Bez `--global` konfiguracja trafia do lokalnego `.llmpkg/llmpkg.json`; z `--global` do `~/.config/llmpkg/config.json`. Wyniki tekstowe i JSON nie wypisują sekretów i redagują dane osadzone w URL. Hasło pozostaje jednak jawne w pliku konfiguracji; należy chronić jego uprawnienia, a w automatyzacji preferować klucze SSH.
 
    **Przeszukiwanie repozytorium**
    Wyszukiwanie dostępnych paczek z promptami lub narzędziami (np. dla słowa kluczowego `postgres`):
