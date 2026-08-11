@@ -40,7 +40,7 @@ while IFS= read -r FILE_PATH; do
         {
             \"type\": \"unknown\",
             \"id\": \"${FILE_ID}\",
-            \"path\": \"${PKG_NAME}/${PKG_VERSION}/${FILE_PATH}\"
+            \"path\": \"${FILE_PATH}\"
         }"
 done < <(cd "$INPUT_DIR" && find . -type f -not -path '*/\.*' | sed 's|^\./||')
 
