@@ -68,10 +68,12 @@ llmpkg uninstall postgres-expert
 
 `--dry-run` does not write artifact files, but it currently does persist an installation record in `.llmpkg/installed.json`.
 
+## Preparing a local repository
+
 Add a local repository for the current project:
 
 ```bash
-llmpkg repo add local file:///absolute/path/to/my-ai-assets
+llmpkg repo add local file:///absolute/path/to/skills-hub/
 ```
 
 To prepare a local repository for more complex project needs, you can host multiple packages, and each package can consist of various artifact layers. Create a directory structure with a `registry.json` index and a `packages/` directory for your assets. Here is an example based on a real `skills-hub`:
@@ -148,6 +150,18 @@ The `manifest.json` defines the package and all its artifacts, with paths relati
 ```
 
 > **Tip:** You can use the provided `./generate-manifest.sh <input_directory> <output_manifest>` script to automatically scaffold a `manifest.json` for your local package directory.
+
+Since the repository structure is identical across all transports, you can easily share your local repository by turning it into a Git repository and pushing it to a server like GitHub:
+
+```bash
+cd skills-hub/
+git init
+git add .
+git commit -m "Initial commit of AI assets"
+git branch -M main
+git remote add origin https://github.com/your-username/skills-hub.git
+git push -u origin main
+```
 
 Generic Git URLs accept `ssh://`, `git://`, SCP-like `user@host:path` syntax, and URLs ending in `.git`. GitHub repositories also have a short form:
 
