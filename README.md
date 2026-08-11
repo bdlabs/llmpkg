@@ -74,6 +74,81 @@ Add a local repository for the current project:
 llmpkg repo add local file:///absolute/path/to/my-ai-assets
 ```
 
+To prepare a local repository for more complex project needs, you can host multiple packages, and each package can consist of various artifact layers. Create a directory structure with a `registry.json` index and a `packages/` directory for your assets. Here is an example based on a real `skills-hub`:
+
+```text
+skills-hub/
+  registry.json
+  packages/
+    documentation-standard/
+      1.0.0/
+        manifest.json
+        SKILL.md
+        resources/
+          front-matter-schema.md
+          hub-template.md
+          ...
+    layered-architecture/
+      1.0.0/
+        manifest.json
+        SKILL.md
+        resources/
+          adapter-layer.md
+          antipatterns.md
+          ...
+```
+
+The `registry.json` indexes all your local packages for discovery:
+
+```json
+{
+  "packages": [
+    {
+      "name": "documentation-standard",
+      "latestVersion": "1.0.0",
+      "versions": [
+        "1.0.0"
+      ],
+      "description": "Standard tworzenia dokumentacji dla agentów"
+    },
+    {
+      "name": "layered-architecture",
+      "latestVersion": "1.0.0",
+      "versions": [
+        "1.0.0"
+      ],
+      "description": "Standard tworzenia architektury dla agentów"
+    }
+  ]
+}
+```
+
+The `manifest.json` defines the package and all its artifacts, with paths relative to the `packages/` directory. For example, `packages/layered-architecture/1.0.0/manifest.json` demonstrates a package built from several layers:
+
+```json
+{
+  "schema": "llmpkg/v1",
+  "name": "layered-architecture",
+  "version": "1.0.0",
+  "description": "Standard tworzenia architektury dla agentów",
+  "artifacts": [
+    {
+      "type": "skill",
+      "id": "SKILL-md",
+      "path": "layered-architecture/1.0.0/SKILL.md"
+    },
+    {
+      "type": "layer",
+      "id": "resources-adapter-layer-md",
+      "path": "layered-architecture/1.0.0/resources/adapter-layer.md"
+    }
+  ],
+  "dependencies": {}
+}
+```
+
+> **Tip:** You can use the provided `./generate-manifest.sh <input_directory> <output_manifest>` script to automatically scaffold a `manifest.json` for your local package directory.
+
 Generic Git URLs accept `ssh://`, `git://`, SCP-like `user@host:path` syntax, and URLs ending in `.git`. GitHub repositories also have a short form:
 
 ```bash

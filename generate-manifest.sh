@@ -1,33 +1,33 @@
 #!/bin/bash
 
-# Sprawdzenie argumentów
+# Check arguments
 INPUT_DIR=$1
 OUTPUT_FILE=$2
 
 if [ -z "$INPUT_DIR" ] || [ -z "$OUTPUT_FILE" ]; then
-    echo "Błąd: Brak wymaganych parametrów."
-    echo "Poprawne użycie: $0 <katalog_wezciowy> <plik_wyjsciowy_manifest.json>"
+    echo "Error: Missing required parameters."
+    echo "Usage: $0 <input_directory> <output_manifest_json>"
     exit 1
 fi
 
 if [ ! -d "$INPUT_DIR" ]; then
-    echo "Błąd: Katalog $INPUT_DIR nie istnieje."
+    echo "Error: Directory $INPUT_DIR does not exist."
     exit 1
 fi
 
-# Zapytania do użytkownika
-read -p "Podaj nazwę pakietu (name): " PKG_NAME
-read -p "Podaj wersję (version) [np. 1.0.0]: " PKG_VERSION
-read -p "Podaj opis pakietu (description): " PKG_DESC
+# Prompt for user input
+read -p "Enter package name: " PKG_NAME
+read -p "Enter version [e.g. 1.0.0]: " PKG_VERSION
+read -p "Enter package description: " PKG_DESC
 
-# Budowanie listy artefaktów jako string JSON
+# Build artifacts list as a JSON string
 ARTIFACTS_JSON="["
 
 FIRST=1
-# Przeszukiwanie katalogu wejściowego z wykluczeniem ukrytych plików/folderów
+# Search the input directory excluding hidden files and folders
 while IFS= read -r FILE_PATH; do
-    # Wygenerowanie bezpiecznego ID
-    # Zamienia wszystkie znaki specjalne i ukośniki na myślniki, usuwa podwójne myślniki
+    # Generate a safe ID
+    # Replaces special characters and slashes with hyphens, removes double hyphens
     FILE_ID=$(echo "$FILE_PATH" | tr -c 'a-zA-Z0-9' '-' | sed 's/-\{2,\}/-/g' | sed 's/^-//; s/-$//')
     
     if [ "$FIRST" -eq 1 ]; then
@@ -40,15 +40,14 @@ while IFS= read -r FILE_PATH; do
         {
             \"type\": \"unknown\",
             \"id\": \"${FILE_ID}\",
-            \"path\": \"${FILE_PATH}\"
+            \"path\": \"${PKG_NAME}/${PKG_VERSION}/${FILE_PATH}\"
         }"
 done < <(cd "$INPUT_DIR" && find . -type f -not -path '*/\.*' | sed 's|^\./||')
 
 ARTIFACTS_JSON+="
     ]"
 
-# Zapisywanie pliku wyjściowego
-# Używamy cat do utworzenia pliku JSON w konkretnej lokalizacji na dysku
+# Save to the output file
 cat > "$OUTPUT_FILE" <<EOF
 {
     "schema": "llmpkg/v1",
@@ -60,4 +59,4 @@ cat > "$OUTPUT_FILE" <<EOF
 }
 EOF
 
-echo -e "\n✅ Gotowe! Plik manifestu został wygenerowany w lokalizacji: $OUTPUT_FILE"
+echo -e "\n✅ Done! The manifest file has been generated at: $OUTPUT_FILE"
