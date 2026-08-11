@@ -1,9 +1,9 @@
 ---
 title: llmpkg Infrastructure
 module: llmpkg-infrastructure
-layers: [BusinessLogic]
+layers: [ApplicationLogic]
 status: current
-last_updated: 2026-08-10
+last_updated: 2026-08-11
 related:
   - ../llmpkg-domain/README.md
   - ../llmpkg-cli/README.md
@@ -11,13 +11,13 @@ related:
 
 # llmpkg — Infrastructure
 
-Implementacje kontraktów domenowych. Zna HTTP, system plików, YAML. Domena NIE importuje z tego modułu.
+Implementacje kontraktów domenowych. Moduł zna HTTP, Git, system plików i JSON. Domena ani logika aplikacji nie importują infrastruktury; konkretne adaptery są podłączane w CLI.
 
 ## Dokumenty w tym module
 
 | Plik | Temat | Warstwy | Status |
 |---|---|---|---|
-| [transports.md](./transports.md) | HTTP i local-fs transport, PackageStore, Cache, Config | BusinessLogic | current |
+| [transports.md](./transports.md) | HTTP, GitHub, generic Git i local-fs, PackageStore, Cache, Config | ApplicationLogic | current |
 
 ## Powiązania
 

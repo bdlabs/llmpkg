@@ -63,7 +63,7 @@ function getHelpText() {
         `  ${cmd} ${theme.value('install')} ${pkgOpt} ${opt('--target <dir>')} ${opt('--dry-run')} ${opt('--json')}\n` +
         `  ${cmd} ${theme.value('uninstall')} ${arg('package')} ${opt('--json')}\n` +
         `  ${cmd} ${theme.value('list')} ${opt('--json')}\n` +
-        `  ${cmd} ${theme.value('repo add')} ${arg('name')} ${arg('url')}\n` +
+        `  ${cmd} ${theme.value('repo add')} ${arg('name')} ${arg('url')} ${opt('--username <login>')} ${opt('--password <password>')} ${opt('--global')}\n` +
         `  ${cmd} ${theme.value('repo list')} ${opt('--json')}\n` +
         `  ${cmd} ${theme.value('help')}`;
 }
@@ -77,8 +77,8 @@ function buildDeps({ config, dryRun = false }) {
     const repoConfig = config.repositories[0] ?? { name: 'default', url: '' };
     return {
         repositoryIndex: createRepositoryIndex(repoConfig),
-        manifestFetcher: createManifestFetcher(),
-        artifactDownloader: createArtifactDownloader(),
+        manifestFetcher: createManifestFetcher(repoConfig),
+        artifactDownloader: createArtifactDownloader(repoConfig),
         packageStore: createJsonPackageStore(join(process.cwd(), '.llmpkg', 'installed.json')),
         fileSystem: dryRun ? createNoOpFileSystem() : createNodeFileSystem(),
         configReader: createYamlConfigReader(),
@@ -156,6 +156,8 @@ export async function runCli(argv = process.argv.slice(2)) {
                         name: parsed.name,
                         url: parsed.url,
                         global: parsed.global,
+                        username: parsed.username,
+                        password: parsed.password,
                     }, deps);
                     process.stdout.write(fmt.repoAdd(result) + '\n');
                 }

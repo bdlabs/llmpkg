@@ -1,9 +1,9 @@
 ---
 title: llmpkg — Transports & Infrastructure
 module: llmpkg-infrastructure
-layers: [BusinessLogic]
+layers: [ApplicationLogic]
 status: current
-last_updated: 2026-08-10
+last_updated: 2026-08-11
 ---
 
 # llmpkg — Infrastructure: Transports, Store, Cache, Config
@@ -112,9 +112,26 @@ Pozwala to na serwowanie i pobieranie paczek llmpkg z darmowego publicznego repo
 
 ---
 
+## Generic Git Transport (`infrastructure/transport/git-transport.js`)
+
+Adapter korzysta z klienta `git` i obsługuje `ssh://`, `git://`, składnię `user@host:path` oraz adresy kończące się `.git`, w tym `ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.git`.
+
+Każda operacja wykonuje płytki checkout do unikalnego katalogu tymczasowego, odczytuje `registry.json`, manifest lub artefakt, a następnie usuwa checkout. Ścieżki są sprawdzane przed odczytem, aby nie mogły wyjść poza katalog repozytorium.
+
+Opcjonalne `username` i `password` są przekazywane przez ograniczone środowisko `GIT_ASKPASS`/`SSH_ASKPASS`; nie trafiają do URL, argumentów Git ani błędów. Błędy techniczne są mapowane na `AUTHENTICATION_REQUIRED` lub `REPOSITORY_UNAVAILABLE`.
+
+Wymagania i ograniczenia:
+
+- klient `git` musi być dostępny w `PATH`;
+- host SSH musi być osiągalny i mieć zaakceptowany host key;
+- hasło w konfiguracji jest tekstem jawnym, więc plik musi być chroniony; w automatyzacji preferowane są klucze SSH;
+- pobierana jest domyślna gałąź wskazana przez serwer.
+
+---
+
 ## Transport Factory (`infrastructure/transport/transport-factory.js`)
 
-Zarządza wstrzykiwaniem odpowiedniego mechanizmu (HTTP, LocalFS lub GitHub) na podstawie przedrostka ścieżki wpisanego przez użytkownika URL/URI. 
+Wybiera HTTP, LocalFS, GitHub albo generic Git. Alias `github:` i GitHub zachowują wyspecjalizowany transport, a standardowe URI Git wybierają klienta Git.
 W `main.js` wywoływana jest ta fabryka, a ona dynamicznie deleguje wywołania z use-case'ów m.in:
 - `file:///d:/repo` -> `createLocalFsRepositoryIndex()`
 - `github:my-agent/skills` -> `createGitHubManifestFetcher()`
@@ -153,7 +170,7 @@ Implementuje `ConfigReader`. Czyta konfigurację z plików JSON.
 ```json
 {
   "repositories": [
-    { "name": "community", "url": "https://packages.example.org", "priority": 10 }
+    { "name": "community", "url": "https://packages.example.org", "priority": 10, "username": "optional", "password": "optional" }
   ],
   "defaultTarget": "./skills"
 }

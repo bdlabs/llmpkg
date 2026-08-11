@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { createInstallPlan } from '../../../src/cli-agent/domain/install-plan.js';
-import { LlmpkgError, ERROR_CODES } from '../../../src/cli-agent/domain/errors.js';
+import { createInstallPlan } from '../../../src/domain/install-plan.js';
+import { LlmpkgError, ERROR_CODES } from '../../../src/domain/errors.js';
 
 const artifacts = [
     { id: 'query-opt', type: 'skill', path: 'skills/query.md' },

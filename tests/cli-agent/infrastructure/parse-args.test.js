@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCliArgs } from '../../../src/cli-agent/cli/adapters/input/parse-args.js';
-import { LlmpkgError, ERROR_CODES } from '../../../src/cli-agent/domain/errors.js';
+import { parseCliArgs } from '../../../src/cli/adapters/input/parse-args.js';
+import { LlmpkgError, ERROR_CODES } from '../../../src/domain/errors.js';
 
 describe('parseCliArgs — search', () => {
     test('parses search command', () => {
@@ -85,6 +85,12 @@ describe('parseCliArgs — repo', () => {
         assert.equal(r.subcommand, 'add');
         assert.equal(r.name, 'community');
         assert.equal(r.url, 'https://example.org');
+    });
+
+    test('parses repository credentials', () => {
+        const r = parseCliArgs(['repo', 'add', 'private', 'ssh://git@example.test:2222/repos/private.git', '--username', 'alice', '--password', 'secret']);
+        assert.equal(r.username, 'alice');
+        assert.equal(r.password, 'secret');
     });
 
     test('parses repo list', () => {

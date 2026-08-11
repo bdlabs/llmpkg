@@ -3,13 +3,15 @@ title: llmpkg — Domain Model
 module: llmpkg-domain
 layers: [BusinessLogic]
 status: current
-last_updated: 2026-08-10
+last_updated: 2026-08-11
 related:
   - ../../by-layer.md
   - ../../../cli-agent/wytyczne.md
 ---
 
 # llmpkg — Domain Model
+
+`ConfigReader` przechowuje repozytoria jako `{ name, url, priority, username?, password? }`. Pola poświadczeń są opcjonalne, a sposób ich użycia pozostaje poza domeną i należy do implementacji transportu.
 
 ## Cel modułu
 

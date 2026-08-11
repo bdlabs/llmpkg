@@ -1,15 +1,15 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { execute } from '../../../src/cli-agent/application/install-use-case.js';
+import { execute } from '../../../src/application/install-use-case.js';
 import {
     createNullArtifactDownloader,
     createNullPackageStore,
     createNullRepositoryIndex,
     createNullManifestFetcher,
     createNullConfigReader,
-} from '../../../src/cli-agent/infrastructure/tests/test-helpers.js';
-import { createNoOpFileSystem } from '../../../src/cli-agent/infrastructure/file-system/noop-file-system.js';
-import { LlmpkgError, ERROR_CODES } from '../../../src/cli-agent/domain/errors.js';
+} from '../../../src/infrastructure/tests/test-helpers.js';
+import { createNoOpFileSystem } from '../../../src/infrastructure/file-system/noop-file-system.js';
+import { LlmpkgError, ERROR_CODES } from '../../../src/domain/errors.js';
 
 const validManifest = {
     schema: 'llmpkg/v1',

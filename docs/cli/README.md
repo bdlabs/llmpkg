@@ -3,7 +3,7 @@ title: llmpkg CLI Layer
 module: llmpkg-cli
 layers: [ApplicationLayer, AdapterLayer, UserInterface]
 status: current
-last_updated: 2026-08-10
+last_updated: 2026-08-11
 related:
   - ../llmpkg-application/README.md
   - ../llmpkg-infrastructure/README.md
@@ -53,6 +53,7 @@ Projekt może być zbudowany do w pełni samodzielnego pakietu CLI w katalogu `d
    llmpkg repo add community https://packages.example.org --global
    llmpkg repo add local file:///d:/programowanie-wlsane/codex/my-repo --global
    llmpkg repo add ai-tools github:user/repo_name --global
+   llmpkg repo add private ssh://git@ismartdev.pl:1922/home/git/repos/skills-hub.git --username git --password '<password>' --global
    ```
 
    Aby zapisać konfigurację lokalnie dla konkretnego projektu (np. by po wejściu w dany katalog odpytywać dodatkowe lokalne ścieżki wpisane w opartym w CWD `llmpkg.json`):
@@ -64,6 +65,9 @@ Projekt może być zbudowany do w pełni samodzielnego pakietu CLI w katalogu `d
    - **HTTP/HTTPS**: `https://.../registry.json`
    - **Lokalny system plików**: `file:///...` lub `/sciezka` (dla testów i lokalnych baz)
    - **GitHub**: `github:wlasciciel/repozytorium` (pobiera z gałęzi `main` przez raw.githubusercontent.com)
+   - **Dowolny Git**: `ssh://`, `git://`, składnia `user@host:path` albo adres kończący się `.git`
+
+   `--username` i `--password` zapisują opcjonalne poświadczenia. Wyniki tekstowe i JSON nie wypisują sekretów i redagują dane osadzone w URL. Hasło pozostaje jednak jawne w pliku konfiguracji; należy chronić jego uprawnienia, a w automatyzacji preferować klucze SSH.
 
    **Przeszukiwanie repozytorium**
    Wyszukiwanie dostępnych paczek z promptami lub narzędziami (np. dla słowa kluczowego `postgres`):

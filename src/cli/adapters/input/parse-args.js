@@ -21,6 +21,8 @@ import { LlmpkgError, ERROR_CODES } from '../../../domain/errors.js';
  *   subcommand?: string,
  *   name?: string,
  *   url?: string,
+ *   username?: string,
+ *   password?: string,
  *   json?: boolean,
  * }} ParsedArgs
  */
@@ -99,7 +101,9 @@ export function parseCliArgs(argv) {
                 if (!name || !url) {
                     throw new LlmpkgError(ERROR_CODES.INVALID_PACKAGE, 'Usage: llmpkg repo add <name> <url>');
                 }
-                return { command: 'repo', subcommand: 'add', name, url, global, json };
+                const username = extractFlagValue(argv, '--username') ?? undefined;
+                const password = extractFlagValue(argv, '--password') ?? undefined;
+                return { command: 'repo', subcommand: 'add', name, url, username, password, global, json };
             }
             if (subcommand === 'list' || !subcommand) {
                 return { command: 'repo', subcommand: 'list', json };

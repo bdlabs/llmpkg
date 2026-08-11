@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { createJsonPackageStore } from '../../../src/cli-agent/infrastructure/store/json-package-store.js';
+import { createJsonPackageStore } from '../../../src/infrastructure/store/json-package-store.js';
 
 let tmpDir;
 let storePath;

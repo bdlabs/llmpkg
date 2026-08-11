@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { createLocalCache } from '../../../src/cli-agent/infrastructure/cache/local-cache.js';
+import { createLocalCache } from '../../../src/infrastructure/cache/local-cache.js';
 
 let tmpDir;
 let cache;

@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeHash, verifyIntegrity, assertIntegrity } from '../../../src/cli-agent/domain/integrity.js';
-import { LlmpkgError, ERROR_CODES } from '../../../src/cli-agent/domain/errors.js';
+import { computeHash, verifyIntegrity, assertIntegrity } from '../../../src/domain/integrity.js';
+import { LlmpkgError, ERROR_CODES } from '../../../src/domain/errors.js';
 
 describe('integrity — computeHash', () => {
     test('returns sha256: prefixed hex', () => {

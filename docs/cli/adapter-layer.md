@@ -3,7 +3,7 @@ title: llmpkg — CLI Adapter Layer
 module: llmpkg-cli
 layers: [ApplicationLayer, AdapterLayer, UserInterface]
 status: current
-last_updated: 2026-08-10
+last_updated: 2026-08-11
 ---
 
 # llmpkg — CLI Adapter Layer
@@ -39,7 +39,7 @@ Tłumaczy `process.argv.slice(2)` na Command DTO. Wyłącznie translacja formatu
 | `install [<pkg>[@ver]] [--target <dir>] [--dry-run]` | `{ command: 'install', packageName?, version?, targetDir, dryRun }` |
 | `uninstall <pkg>` | `{ command: 'uninstall', packageName }` |
 | `list` | `{ command: 'list' }` |
-| `repo add <name> <url>` | `{ command: 'repo', subcommand: 'add', name, url }` |
+| `repo add <name> <url> [--username <login>] [--password <password>]` | `{ command: 'repo', subcommand: 'add', name, url, username?, password? }` |
 | `repo list` | `{ command: 'repo', subcommand: 'list' }` |
 | (brak lub help) | `{ command: 'help' }` |
 
@@ -68,6 +68,8 @@ Formatuje wyniki use case'ów jako czytelny tekst dla człowieka z wykorzystanie
 ### TechnicalLeakage prevention
 
 `formatError()` ukrywa stack trace i surowe błędy infrastruktury. Użytkownik widzi tylko `code` i `message` — oba bezpieczne do wyświetlenia.
+
+Formatery repozytoriów budują bezpieczne DTO: pomijają `username` i `password`, publikują co najwyżej `authenticated`, a poświadczenia osadzone w URL redagują.
 
 ---
 

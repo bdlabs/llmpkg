@@ -3,7 +3,7 @@ title: llmpkg ApplicationLogic
 module: llmpkg-application
 layers: [ApplicationLogic]
 status: current
-last_updated: 2026-08-10
+last_updated: 2026-08-11
 related:
   - ../llmpkg-domain/README.md
   - ../llmpkg-infrastructure/README.md

@@ -3,7 +3,7 @@ title: llmpkg — Use Cases
 module: llmpkg-application
 layers: [ApplicationLogic]
 status: current
-last_updated: 2026-08-10
+last_updated: 2026-08-11
 related:
   - ../llmpkg-domain/domain-model.md
 ---
@@ -110,6 +110,14 @@ Use case nie zmienia swojej logiki — DIP w praktyce.
 3. `packageStore.removeInstallRecord(name)` → czyszczenie stanu
 
 **Reguła:** uninstall usuwa TYLKO pliki zapisane w lockfile — nie czyta manifestu z internetu.
+
+---
+
+## RepoAddUseCase (`repo-add-use-case.js`)
+
+**Command:** `{ name, url, global?, username?, password? }`
+
+Tworzy lub aktualizuje wpis repozytorium przez `ConfigReader`. Pominięte dane logowania nie kasują istniejących poświadczeń. Wynik zawiera tylko `authenticated: boolean`; hasło nie wraca do prezentacji. Sposób użycia poświadczeń należy do adaptera infrastruktury.
 
 ---
 

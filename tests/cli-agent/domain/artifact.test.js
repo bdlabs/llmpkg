@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { createArtifact, isPathSafe, ARTIFACT_TYPES } from '../../../src/cli-agent/domain/artifact.js';
-import { LlmpkgError, ERROR_CODES } from '../../../src/cli-agent/domain/errors.js';
+import { createArtifact, isPathSafe, ARTIFACT_TYPES } from '../../../src/domain/artifact.js';
+import { LlmpkgError, ERROR_CODES } from '../../../src/domain/errors.js';
 
 describe('artifact — isPathSafe', () => {
     test('accepts relative paths', () => {

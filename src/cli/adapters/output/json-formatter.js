@@ -8,6 +8,27 @@
 
 import { getSafeErrorMessage } from './error-mapper.js';
 
+function sanitizeUrl(value) {
+    try {
+        const url = new URL(value);
+        url.username = url.username ? '***' : '';
+        url.password = '';
+        return url.toString();
+    } catch {
+        return value;
+    }
+}
+
+function safeRepository(repo) {
+    return {
+        name: repo.name,
+        url: sanitizeUrl(repo.url),
+        ...(repo.priority !== undefined ? { priority: repo.priority } : {}),
+        ...(repo.authenticated || repo.username || repo.password ? { authenticated: true } : {}),
+        ...(repo.global !== undefined ? { global: repo.global } : {}),
+    };
+}
+
 /**
  * @param {{ packages: Array, totalCount: number }} result
  * @returns {string}
@@ -53,7 +74,7 @@ export function formatInstalledListJson(records) {
  * @returns {string}
  */
 export function formatRepoAddResultJson(result) {
-    return JSON.stringify(result, null, 2);
+    return JSON.stringify(safeRepository(result), null, 2);
 }
 
 /**
@@ -61,7 +82,7 @@ export function formatRepoAddResultJson(result) {
  * @returns {string}
  */
 export function formatRepositoryListJson(repos) {
-    return JSON.stringify(repos, null, 2);
+    return JSON.stringify(repos.map(safeRepository), null, 2);
 }
 
 /**

@@ -13,6 +13,17 @@ const COL_NAME = 24;
 const COL_VERSION = 12;
 const COL_REPO = 16;
 
+function sanitizeUrl(value) {
+    try {
+        const url = new URL(value);
+        url.username = url.username ? '***' : '';
+        url.password = '';
+        return url.toString();
+    } catch {
+        return value;
+    }
+}
+
 function pad(str, width) {
     return String(str ?? '').padEnd(width);
 }
@@ -102,7 +113,7 @@ export function formatInstalledList(records) {
  */
 export function formatRepoAddResult(result) {
     const scope = result.global ? 'global config (~/.config/llmpkg/config.json)' : 'project config (.llmpkg/llmpkg.json)';
-    return `${theme.iconSuccess()} ${theme.success('Added repository')} ${theme.value(`'${result.name}'`)} ${theme.muted(`(${result.url})`)} to ${theme.muted(scope)}.`;
+    return `${theme.iconSuccess()} ${theme.success('Added repository')} ${theme.value(`'${result.name}'`)} ${theme.muted(`(${sanitizeUrl(result.url)})`)} to ${theme.muted(scope)}.`;
 }
 
 /**
@@ -112,7 +123,7 @@ export function formatRepoAddResult(result) {
  */
 export function formatRepositoryList(repos) {
     if (repos.length === 0) return theme.warning('No repositories configured.');
-    return repos.map((r) => `${theme.value(r.name)}  ${theme.muted(r.url)}`).join('\n');
+    return repos.map((r) => `${theme.value(r.name)}  ${theme.muted(sanitizeUrl(r.url))}${r.username || r.password ? theme.muted('  [authenticated]') : ''}`).join('\n');
 }
 
 /**

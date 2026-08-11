@@ -4,8 +4,8 @@ import {
     buildDependencyGraph,
     detectCycles,
     resolveDependencyOrder,
-} from '../../../src/cli-agent/domain/dependency-graph.js';
-import { LlmpkgError, ERROR_CODES } from '../../../src/cli-agent/domain/errors.js';
+} from '../../../src/domain/dependency-graph.js';
+import { LlmpkgError, ERROR_CODES } from '../../../src/domain/errors.js';
 
 const pkgA = { name: 'a', dependencies: { b: '^1.0.0' } };
 const pkgB = { name: 'b', dependencies: {} };

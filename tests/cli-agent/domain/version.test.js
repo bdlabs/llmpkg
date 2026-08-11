@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseVersion, compareVersions, satisfiesConstraint, resolveBestVersion, SUPPORTED_SCHEMA } from '../../../src/cli-agent/domain/version.js';
-import { LlmpkgError, ERROR_CODES } from '../../../src/cli-agent/domain/errors.js';
+import { parseVersion, compareVersions, satisfiesConstraint, resolveBestVersion, SUPPORTED_SCHEMA } from '../../../src/domain/version.js';
+import { LlmpkgError, ERROR_CODES } from '../../../src/domain/errors.js';
 
 describe('version — parseVersion', () => {
     test('parses valid semver', () => {

@@ -3,7 +3,7 @@ title: llmpkg Domain Model
 module: llmpkg-domain
 layers: [BusinessLogic]
 status: current
-last_updated: 2026-08-10
+last_updated: 2026-08-11
 related:
   - ../llmpkg-application/README.md
   - ../../cli-agent/wytyczne.md

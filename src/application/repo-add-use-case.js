@@ -4,16 +4,15 @@
  * ApplicationLogic layer — orchestrates config check and persistence.
  */
 
-import { LlmpkgError, ERROR_CODES } from '../domain/errors.js';
 import { createDefaultConfig } from '../domain/contracts/config-reader.js';
 
 /**
  * Execute the repository add workflow.
- * @param {{ name: string, url: string, global?: boolean }} input
+ * @param {{ name: string, url: string, global?: boolean, username?: string, password?: string }} input
  * @param {{ configReader: import('../domain/contracts/config-reader.js').ConfigReader }} deps
  * @returns {Promise<{ name: string, url: string, global: boolean }>}
  */
-export async function execute({ name, url, global = false }, { configReader }) {
+export async function execute({ name, url, global = false, username, password }, { configReader }) {
     let config;
     if (global) {
         config = await configReader.readGlobalConfig();
@@ -30,9 +29,20 @@ export async function execute({ name, url, global = false }, { configReader }) {
 
     const index = config.repositories.findIndex((r) => r.name === name);
     if (index !== -1) {
-        config.repositories[index].url = url;
+        config.repositories[index] = {
+            ...config.repositories[index],
+            url,
+            ...(username !== undefined ? { username } : {}),
+            ...(password !== undefined ? { password } : {}),
+        };
     } else {
-        config.repositories.push({ name, url, priority: config.repositories.length });
+        config.repositories.push({
+            name,
+            url,
+            priority: config.repositories.length,
+            ...(username !== undefined ? { username } : {}),
+            ...(password !== undefined ? { password } : {}),
+        });
     }
 
     if (global) {
@@ -41,5 +51,5 @@ export async function execute({ name, url, global = false }, { configReader }) {
         await configReader.writeProjectConfig(config);
     }
 
-    return { name, url, global };
+    return { name, url, global, authenticated: Boolean(username || password) };
 }

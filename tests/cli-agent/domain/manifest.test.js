@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseManifest } from '../../../src/cli-agent/domain/manifest.js';
-import { LlmpkgError, ERROR_CODES } from '../../../src/cli-agent/domain/errors.js';
+import { parseManifest } from '../../../src/domain/manifest.js';
+import { LlmpkgError, ERROR_CODES } from '../../../src/domain/errors.js';
 
 const validRaw = {
     schema: 'llmpkg/v1',
