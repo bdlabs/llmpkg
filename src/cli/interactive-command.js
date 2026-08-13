@@ -150,20 +150,27 @@ export async function runInteractive(deps) {
             console.log(theme.primary(`\nInstalling ${selectedForInstall.size} packages to ${targetDir} ...`));
 
             let successCount = 0;
+            let packageIdx = 1;
+            const totalPkgs = selectedForInstall.size;
+
             for (const [name, version] of selectedForInstall.entries()) {
-                console.log(theme.muted(`> Installing ${name}@${version} ...`));
                 try {
                     await InstallUseCase.execute({
                         packageName: name,
                         version: version,
                         targetDir: targetDir,
                         dryRun: false,
+                        onProgress: (p) => {
+                            process.stdout.write(`\r\x1b[K${theme.muted(`[${packageIdx}/${totalPkgs}]`)} ${theme.primary(name)}: ${theme.muted(p.status)} [${p.percentage}%]`);
+                        }
                     }, deps);
-                    console.log(theme.success(`✓ Installed ${name}`));
+
+                    process.stdout.write(`\r\x1b[K${theme.success(`✓ Installed ${name}`)}\n`);
                     successCount++;
                 } catch (err) {
-                    console.log(theme.error(`✗ Failed to install ${name}: ${err.message}`));
+                    process.stdout.write(`\r\x1b[K${theme.error(`✗ Failed to install ${name}: ${err.message}`)}\n`);
                 }
+                packageIdx++;
             }
 
             console.log(theme.success(`\nInstallation complete! (${successCount}/${selectedForInstall.size} succeeded)\n`));

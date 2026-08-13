@@ -22,6 +22,7 @@ import { assertIntegrity } from '../domain/integrity.js';
  *   targetDir: string,
  *   dryRun?: boolean,
  *   repository?: string,
+ *   onProgress?: (progress: { packageName: string, current: number, total: number, percentage: number, status: string }) => void,
  * }} InstallCommand
  *
  * @typedef {{
@@ -46,7 +47,7 @@ import { assertIntegrity } from '../domain/integrity.js';
  * @returns {Promise<InstallResult>}
  */
 export async function execute(command, { repositoryIndex, manifestFetcher, artifactDownloader, packageStore, fileSystem, configReader, config }) {
-    const { packageName, targetDir, dryRun = false, repository } = command;
+    const { packageName, targetDir, dryRun = false, repository, onProgress } = command;
 
     if (!packageName) throw new LlmpkgError(ERROR_CODES.INVALID_PACKAGE, 'packageName is required.');
     if (!targetDir) throw new LlmpkgError(ERROR_CODES.INVALID_PACKAGE, 'targetDir is required.');
@@ -84,7 +85,19 @@ export async function execute(command, { repositoryIndex, manifestFetcher, artif
     }
 
     // Step 4: Download + verify + write each artifact
+    let currentIdx = 0;
+    const totalCount = pkg.artifacts.length;
     for (const artifact of pkg.artifacts) {
+        if (typeof onProgress === 'function') {
+            onProgress({
+                packageName: pkg.name,
+                current: currentIdx,
+                total: totalCount,
+                percentage: totalCount > 0 ? Math.round((currentIdx / totalCount) * 100) : 100,
+                status: `Fetching ${artifact.id}`,
+            });
+        }
+
         const data = await artifactDownloader.downloadArtifact(artifact, repoUrl);
 
         // Integrity check — domain rule — only if hash is provided in manifest
@@ -96,6 +109,17 @@ export async function execute(command, { repositoryIndex, manifestFetcher, artif
         await fileSystem.ensureDir(destPath.replace(/[/\\][^/\\]+$/, ''));
         await fileSystem.writeFile(destPath, data);
         installedFiles.push(destPath);
+        currentIdx++;
+    }
+
+    if (typeof onProgress === 'function') {
+        onProgress({
+            packageName: pkg.name,
+            current: totalCount,
+            total: totalCount,
+            percentage: 100,
+            status: 'Finalizing install...',
+        });
     }
 
     // Step 5: Persist lock record

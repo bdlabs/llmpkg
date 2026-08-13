@@ -128,13 +128,22 @@ export async function runCli(argv = process.argv.slice(2)) {
             }
 
             case 'install': {
+                const onProgress = (p) => {
+                    if (!useJson) {
+                        process.stdout.write(`\r\x1b[K${theme.muted('>')} ${theme.primary(p.packageName)}: ${theme.muted(p.status)} [${p.percentage}%]`);
+                    }
+                };
+
                 const result = await InstallUseCase.execute({
                     packageName: parsed.packageName,
                     version: parsed.version,
                     targetDir: parsed.targetDir,
                     dryRun: parsed.dryRun,
                     repository: parsed.repository,
+                    onProgress,
                 }, deps);
+
+                if (!useJson) process.stdout.write('\r\x1b[K'); // clear progress line
                 process.stdout.write(fmt.install(result) + '\n');
                 break;
             }
