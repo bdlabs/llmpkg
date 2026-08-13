@@ -11,7 +11,7 @@ import { LlmpkgError, ERROR_CODES } from '../../../domain/errors.js';
 
 /**
  * @typedef {{
- *   command: 'search'|'info'|'install'|'uninstall'|'repo'|'list'|'help',
+ *   command: 'search'|'info'|'install'|'uninstall'|'repo'|'list'|'help'|'interactive',
  *   query?: string,
  *   packageName?: string,
  *   version?: string,
@@ -91,6 +91,12 @@ export function parseCliArgs(argv) {
 
         case 'list': {
             return { command: 'list', json };
+        }
+
+        case 'interactive':
+        case 'iv':
+        case 'i': {
+            return { command: 'interactive', json };
         }
 
         case 'repo': {

@@ -35,6 +35,7 @@ import * as UninstallUseCase from '../application/uninstall-use-case.js';
 import * as RepoAddUseCase from '../application/repo-add-use-case.js';
 import * as ListInstalledUseCase from '../application/list-installed-use-case.js';
 import * as ListRepositoriesUseCase from '../application/list-repositories-use-case.js';
+import { runInteractive } from './interactive-command.js';
 import { resolveConfig } from '../application/config-resolver.js';
 
 import { createRepositoryIndex, createManifestFetcher, createArtifactDownloader } from '../infrastructure/transport/transport-factory.js';
@@ -65,6 +66,7 @@ function getHelpText() {
         `  ${cmd} ${theme.value('list')} ${opt('--json')}\n` +
         `  ${cmd} ${theme.value('repo add')} ${arg('name')} ${arg('url')} ${opt('--username <login>')} ${opt('--password <password>')} ${opt('--global')}\n` +
         `  ${cmd} ${theme.value('repo list')} ${opt('--json')}\n` +
+        `  ${cmd} ${theme.value('interactive')}\n` +
         `  ${cmd} ${theme.value('help')}`;
 }
 
@@ -169,6 +171,11 @@ export async function runCli(argv = process.argv.slice(2)) {
                 break;
             }
 
+            case 'interactive': {
+                await runInteractive(deps);
+                break;
+            }
+
             default:
                 process.stdout.write(getHelpText() + '\n');
         }
@@ -179,7 +186,6 @@ export async function runCli(argv = process.argv.slice(2)) {
     }
 }
 
-// Entry point when run directly
 // Entry point when run directly
 import url from 'node:url';
 const isMain = process.argv[1] && import.meta.url === url.pathToFileURL(process.argv[1]).href;

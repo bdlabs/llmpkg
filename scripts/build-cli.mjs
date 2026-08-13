@@ -17,7 +17,7 @@ async function buildCli() {
         target: 'node18',
         outfile: resolve(outDir, 'index.js'),
         banner: {
-            js: '#!/usr/bin/env node',
+            js: `#!/usr/bin/env node\nimport { createRequire as topLevelCreateRequire } from 'module';\nconst require = topLevelCreateRequire(import.meta.url);`,
         },
         minify: true,
     });
