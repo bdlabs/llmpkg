@@ -109,16 +109,16 @@ export async function runInteractive(deps) {
             const choices = installed.map((pkg) => ({
                 name: `${pkg.name} (v${pkg.version})`,
                 value: pkg.name,
-                checked: true, // checked means "keep installed"
+                checked: false, // checked means "uninstall"
             }));
 
-            const checkedToKeep = await checkbox({
-                message: 'Select packages to KEEP (uncheck to UNINSTALL):',
+            const checkedToUninstall = await checkbox({
+                message: 'Select packages to UNINSTALL:',
                 choices,
             });
 
-            const keptNames = new Set(checkedToKeep);
-            const toUninstall = installed.filter((pkg) => !keptNames.has(pkg.name));
+            const toUninstallNames = new Set(checkedToUninstall);
+            const toUninstall = installed.filter((pkg) => toUninstallNames.has(pkg.name));
 
             if (toUninstall.length > 0) {
                 console.log(`\nUninstalling ${toUninstall.length} packages...`);

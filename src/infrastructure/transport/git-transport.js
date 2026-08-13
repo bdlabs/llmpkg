@@ -5,6 +5,7 @@
 
 import { execFile } from 'node:child_process';
 import { mkdtemp, readFile, realpath, rm, writeFile, chmod } from 'node:fs/promises';
+import { rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -100,9 +101,27 @@ export async function createSshLauncher(directory) {
     return launcher;
 }
 
-async function withCheckout(repoConfig, action) {
-    const directory = await mkdtemp(join(tmpdir(), 'llmpkg-git-'));
-    try {
+const cleanupDirectories = new Set();
+process.on('exit', () => {
+    for (const dir of cleanupDirectories) {
+        try { rmSync(dir, { recursive: true, force: true }); } catch (e) { }
+    }
+});
+process.on('SIGINT', () => {
+    process.exit(1);
+});
+
+const checkoutCache = new Map();
+
+async function getSharedCheckout(repoConfig) {
+    if (checkoutCache.has(repoConfig.url)) {
+        return checkoutCache.get(repoConfig.url);
+    }
+
+    const checkoutPromise = (async () => {
+        const directory = await mkdtemp(join(tmpdir(), 'llmpkg-git-'));
+        cleanupDirectories.add(directory);
+
         const askPass = await createAskPassLauncher(directory);
         const clone = prepareGitClone(repoConfig);
         const sshLauncher = clone.sshUsername ? await createSshLauncher(directory) : undefined;
@@ -131,10 +150,16 @@ async function withCheckout(repoConfig, action) {
         } catch (error) {
             throw mapGitError(error);
         }
-        return await action(checkout);
-    } finally {
-        await rm(directory, { recursive: true, force: true });
-    }
+        return checkout;
+    })();
+
+    checkoutCache.set(repoConfig.url, checkoutPromise);
+    return checkoutPromise;
+}
+
+async function withCheckout(repoConfig, action) {
+    const checkout = await getSharedCheckout(repoConfig);
+    return await action(checkout);
 }
 
 async function readJson(root, ...segments) {
